@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Coins, Lock, User, LogIn } from "lucide-react";
-
 type OnLogin = (token: string) => void;
 
 export default function AdminLogin({ onLogin }: { onLogin: OnLogin }) {
