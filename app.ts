@@ -69,6 +69,41 @@ function requireAdmin(req: express.Request, res: express.Response, next: express
 const app = express();
 app.use(express.json());
 
+/** Client IP from headers (Vercel/proxy) or socket */
+function getClientIp(req: express.Request): string {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (forwarded) {
+    const first = typeof forwarded === "string" ? forwarded.split(",")[0] : forwarded[0];
+    if (first) return first.trim();
+  }
+  const real = req.headers["x-real-ip"];
+  if (real && typeof real === "string") return real.trim();
+  return req.socket?.remoteAddress ?? "unknown";
+}
+
+/** Health check: для мониторинга и проверки доступности сайта. */
+app.get("/api/health", async (req, res) => {
+  const ip = getClientIp(req);
+  const started = new Date().toISOString();
+  let db: "ok" | "error" = "ok";
+  if (MONGODB_URI) {
+    try {
+      await getClient().then((c) => c.db(DB_NAME).command({ ping: 1 }));
+    } catch {
+      db = "error";
+    }
+  } else {
+    db = "error";
+  }
+  res.set("Cache-Control", "no-store");
+  res.status(200).json({
+    status: "ok",
+    timestamp: started,
+    ip,
+    db,
+  });
+});
+
 app.get("/api/classes", async (req, res) => {
   try {
     const col = await getClassesCol();
