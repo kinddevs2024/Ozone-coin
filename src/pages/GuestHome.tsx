@@ -2,20 +2,15 @@ import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Coins, Users, ChevronRight, TrendingUp, BookOpen, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
-
-interface ClassItem {
-  id: string;
-  name: string;
-}
+import { getClasses, type ClassItem } from "../db";
 
 export default function GuestHome() {
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/classes")
-      .then((res) => res.json())
-      .then((data) => setClasses(Array.isArray(data) ? data : []))
+    getClasses()
+      .then(setClasses)
       .catch(() => setClasses([]))
       .finally(() => setIsLoading(false));
   }, []);

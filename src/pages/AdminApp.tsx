@@ -13,24 +13,23 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
-import { authHeaders, clearAdminToken, getAdminToken } from "../api";
-
-interface ClassItem {
-  id: string;
-  name: string;
-}
-
-interface Student {
-  id: string;
-  name: string;
-  coins: number;
-  class_id: string;
-}
+import { clearAdminToken } from "../api";
+import {
+  getClasses,
+  getStudents,
+  addClass,
+  deleteClass as dbDeleteClass,
+  addStudent,
+  deleteStudent as dbDeleteStudent,
+  updateCoins,
+  type ClassItem,
+  type StudentItem,
+} from "../db";
 
 export default function AdminApp({ onLogout }: { onLogout: () => void }) {
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
-  const [students, setStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<StudentItem[]>([]);
   const [newClassName, setNewClassName] = useState("");
   const [newStudentName, setNewStudentName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -45,9 +44,8 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
 
   const fetchClasses = async () => {
     try {
-      const res = await fetch("/api/classes");
-      const data = await res.json();
-      setClasses(Array.isArray(data) ? data : []);
+      const data = await getClasses();
+      setClasses(data);
     } catch (err) {
       console.error("Failed to fetch classes", err);
     } finally {
@@ -57,91 +55,68 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
 
   const fetchStudents = async (classId: string) => {
     try {
-      const res = await fetch(`/api/classes/${classId}/students`);
-      const data = await res.json();
-      setStudents(Array.isArray(data) ? data : []);
+      const data = await getStudents(classId);
+      setStudents(data);
     } catch (err) {
       console.error("Failed to fetch students", err);
     }
   };
 
-  const addClass = async (e: React.FormEvent) => {
+  const handleAddClass = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newClassName.trim()) return;
     try {
-      const res = await fetch("/api/classes", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({ name: newClassName }),
-      });
-      if (res.ok) {
-        setNewClassName("");
-        fetchClasses();
-      }
+      await addClass(newClassName);
+      setNewClassName("");
+      fetchClasses();
     } catch (err) {
       console.error("Failed to add class", err);
     }
   };
 
-  const deleteClass = async (id: string) => {
+  const handleDeleteClass = async (id: string) => {
     if (!window.confirm("Bu sinf va barcha o‘quvchilarni o‘chirishni xohlaysizmi?")) return;
     try {
-      const res = await fetch(`/api/classes/${id}`, { method: "DELETE", headers: authHeaders() });
-      if (res.ok) {
-        setClasses((prev) => prev.filter((c) => c.id !== id));
-        if (selectedClass?.id === id) setSelectedClass(null);
-      }
+      await dbDeleteClass(id);
+      setClasses((prev) => prev.filter((c) => c.id !== id));
+      if (selectedClass?.id === id) setSelectedClass(null);
     } catch (err) {
       console.error("Failed to delete class", err);
     }
   };
 
-  const addStudent = async (e: React.FormEvent) => {
+  const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudentName.trim() || !selectedClass) return;
     try {
-      const res = await fetch("/api/students", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({ name: newStudentName, classId: selectedClass.id }),
-      });
-      if (res.ok) {
-        setNewStudentName("");
-        fetchStudents(selectedClass.id);
-      }
+      await addStudent(newStudentName, selectedClass.id);
+      setNewStudentName("");
+      fetchStudents(selectedClass.id);
     } catch (err) {
       console.error("Failed to add student", err);
     }
   };
 
-  const deleteStudent = async (id: string) => {
+  const handleDeleteStudent = async (id: string) => {
     if (!confirm("O‘quvchini o‘chirishni xohlaysizmi?")) return;
     try {
-      await fetch(`/api/students/${id}`, { method: "DELETE", headers: authHeaders() });
+      await dbDeleteStudent(id);
       if (selectedClass) fetchStudents(selectedClass.id);
     } catch (err) {
       console.error("Failed to delete student", err);
     }
   };
 
-  const updateCoins = async (studentId: string, amount: number) => {
+  const handleUpdateCoins = async (studentId: string, amount: number) => {
     try {
-      const res = await fetch(`/api/students/${studentId}/coins`, {
-        method: "PATCH",
-        headers: authHeaders(),
-        body: JSON.stringify({ amount }),
-      });
-      if (res.ok && selectedClass) fetchStudents(selectedClass.id);
+      await updateCoins(studentId, amount);
+      if (selectedClass) fetchStudents(selectedClass.id);
     } catch (err) {
       console.error("Failed to update coins", err);
     }
   };
 
   const handleLogout = () => {
-    const token = getAdminToken();
-    if (token) {
-      fetch("/api/admin/logout", { method: "POST", headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
-    }
     clearAdminToken();
     onLogout();
   };
@@ -198,7 +173,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                   <Users size={28} /> Sinflar
                 </h2>
 
-                <form onSubmit={addClass} className="flex gap-2 mb-8">
+                <form onSubmit={handleAddClass} className="flex gap-2 mb-8">
                   <input
                     type="text"
                     value={newClassName}
@@ -231,7 +206,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            deleteClass(cls.id);
+                            handleDeleteClass(cls.id);
                           }}
                           className="p-2 text-gray-400 hover:text-red-600 transition-colors relative z-20"
                           aria-label="O‘chirish"
@@ -279,7 +254,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                 </div>
               </div>
 
-              <form onSubmit={addStudent} className="flex gap-2 mb-10">
+              <form onSubmit={handleAddStudent} className="flex gap-2 mb-10">
                 <input
                   type="text"
                   value={newStudentName}
@@ -331,26 +306,26 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                     <div className="flex items-center gap-2">
                       <div className="flex bg-gray-100 p-1 brutal-border">
                         <button
-                          onClick={() => updateCoins(student.id, 5)}
+                          onClick={() => handleUpdateCoins(student.id, 5)}
                           className="px-3 py-1 bg-green-500 text-white font-bold hover:bg-green-600 transition-colors border-r-2 border-black"
                         >
                           +5
                         </button>
                         <button
-                          onClick={() => updateCoins(student.id, 10)}
+                          onClick={() => handleUpdateCoins(student.id, 10)}
                           className="px-3 py-1 bg-green-600 text-white font-bold hover:bg-green-700 transition-colors border-r-2 border-black"
                         >
                           +10
                         </button>
                         <button
-                          onClick={() => updateCoins(student.id, -1)}
+                          onClick={() => handleUpdateCoins(student.id, -1)}
                           className="px-3 py-1 bg-red-500 text-white font-bold hover:bg-red-600 transition-colors"
                         >
                           -1
                         </button>
                       </div>
                       <button
-                        onClick={() => deleteStudent(student.id)}
+                        onClick={() => handleDeleteStudent(student.id)}
                         className="p-2 text-gray-400 hover:text-red-600 transition-colors ml-2"
                         aria-label="O‘chirish"
                       >

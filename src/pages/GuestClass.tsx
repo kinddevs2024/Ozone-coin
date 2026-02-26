@@ -2,33 +2,23 @@ import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Coins, Users, ArrowLeft, Award, Trophy } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-
-interface Student {
-  id: string;
-  name: string;
-  coins: number;
-  class_id: string;
-}
+import { getClasses, getStudents, type StudentItem } from "../db";
 
 export default function GuestClass() {
   const { classId } = useParams<{ classId: string }>();
   const [className, setClassName] = useState("");
-  const [students, setStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<StudentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     if (!classId) return;
-    Promise.all([
-      fetch("/api/classes").then((r) => r.json()),
-      fetch(`/api/classes/${classId}/students`).then((r) => (r.ok ? r.json() : [])),
-    ])
+    Promise.all([getClasses(), getStudents(classId)])
       .then(([classes, st]) => {
-        const list = Array.isArray(classes) ? classes : [];
-        const cls = list.find((c: { id: string }) => c.id === classId);
+        const cls = classes.find((c) => c.id === classId);
         if (cls) setClassName(cls.name);
         else setNotFound(true);
-        setStudents(Array.isArray(st) ? st : []);
+        setStudents(st);
       })
       .catch(() => setNotFound(true))
       .finally(() => setIsLoading(false));

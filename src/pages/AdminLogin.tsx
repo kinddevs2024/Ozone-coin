@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Coins, Lock, User, LogIn } from "lucide-react";
+import { setAdminToken } from "../api";
+
 type OnLogin = (token: string) => void;
 
 export default function AdminLogin({ onLogin }: { onLogin: OnLogin }) {
@@ -21,6 +23,7 @@ export default function AdminLogin({ onLogin }: { onLogin: OnLogin }) {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.token) {
+        setAdminToken(data.token);
         onLogin(data.token);
       } else {
         setError("Login yoki parol noto‘g‘ri");

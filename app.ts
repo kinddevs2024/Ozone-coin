@@ -1,10 +1,10 @@
 /**
- * Express app for Vercel (and local production).
- * Export default app so Vercel can run it as a serverless function.
- * Uses JWT for admin auth (no in-memory state) and lazy MongoDB connection.
+ * Backend API: все данные сохраняются только в MongoDB.
+ * Express app for Vercel (and local). Set MONGODB_URI in .env / Vercel env vars.
  */
 import "dotenv/config";
 import express from "express";
+import fs from "fs";
 import path from "path";
 import { MongoClient, ObjectId } from "mongodb";
 import crypto from "crypto";
@@ -18,7 +18,7 @@ const JWT_SECRET = process.env.JWT_SECRET || ADMIN_PASSWORD || "ozone-secret";
 let clientPromise: Promise<MongoClient> | null = null;
 
 function getClient(): Promise<MongoClient> {
-  if (!MONGODB_URI) throw new Error("MONGODB_URI not set");
+  if (!MONGODB_URI?.trim()) throw new Error("MONGODB_URI not set");
   if (!clientPromise) clientPromise = new MongoClient(MONGODB_URI).connect();
   return clientPromise;
 }
@@ -116,25 +116,29 @@ app.get("/api/health", async (req, res) => {
   });
 });
 
-app.get("/api/classes", async (req, res) => {
+app.get("/api/classes", async (_req, res) => {
   try {
+    if (!MONGODB_URI?.trim()) return res.json([]);
     const col = await getClassesCol();
     const list = await col.find({}).project({ _id: 1, name: 1 }).toArray();
-    res.json(list.map((c) => ({ id: c._id?.toString(), name: c.name })));
+    return res.json(list.map((c) => ({ id: c._id?.toString(), name: c.name })));
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "Failed to fetch classes" });
+    console.error("GET /api/classes error:", e);
+    return res.status(200).json([]);
   }
 });
 
 app.get("/api/classes/:classId/students", async (req, res) => {
+  let id: ObjectId;
   try {
-    let id: ObjectId;
-    try {
-      id = new ObjectId(req.params.classId);
-    } catch {
-      return res.status(400).json({ error: "Invalid class id" });
-    }
+    id = new ObjectId(req.params.classId);
+  } catch {
+    return res.status(400).json({ error: "Invalid class id" });
+  }
+  if (!MONGODB_URI?.trim()) {
+    return res.json([]);
+  }
+  try {
     const col = await getStudentsCol();
     const list = await col.find({ classId: id }).sort({ coins: -1 }).toArray();
     res.json(
@@ -146,8 +150,8 @@ app.get("/api/classes/:classId/students", async (req, res) => {
       }))
     );
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "Failed to fetch students" });
+    console.error("GET /api/classes/:id/students error:", e);
+    res.json([]);
   }
 });
 
@@ -250,12 +254,15 @@ app.patch("/api/students/:id/coins", requireAdmin, async (req, res) => {
   }
 });
 
-// SPA fallback (Vercel may serve static from dist; this is for when all traffic hits Express)
+// SPA fallback: only serve dist in production; in dev next() lets Vite serve the app
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api")) return next();
-  res.sendFile(path.join(process.cwd(), "dist", "index.html"), (err) => {
-    if (err) res.status(404).send("Not found");
-  });
+  const distIndex = path.join(process.cwd(), "dist", "index.html");
+  if (process.env.NODE_ENV === "production" && fs.existsSync(distIndex)) {
+    res.sendFile(distIndex, (err) => { if (err) res.status(404).send("Not found"); });
+  } else {
+    next();
+  }
 });
 
 export default app;
