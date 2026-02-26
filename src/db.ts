@@ -1,9 +1,7 @@
 /**
- * Обращение к нашему API (тот же домен — нет CORS).
- * Бэкенд (app.ts) пишет в MongoDB по MONGODB_URI.
+ * Обращение к API бэкенда (URL задаётся через VITE_API_URL).
  */
-
-import { authHeaders } from "./api";
+import { authHeaders, getApiBase } from "./api";
 
 export interface ClassItem {
   id: string;
@@ -17,8 +15,11 @@ export interface StudentItem {
   class_id: string;
 }
 
+const base = () => getApiBase();
+
 const api = async (path: string, opts?: RequestInit) => {
-  const res = await fetch(path, opts);
+  const url = path.startsWith("http") ? path : base() + path;
+  const res = await fetch(url, opts);
   if (!res.ok) {
     const t = await res.text();
     throw new Error(t || `${res.status}`);

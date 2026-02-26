@@ -17,12 +17,10 @@ export default function OzoneIcon({ size = 32, className = "" }: OzoneIconProps)
   const arrowR = 8;
   const arrowCx = c2;
   const arrowCy = c2;
-  // Дуга от 10 o'clock по часовой к 7 o'clock
   const startX = arrowCx + arrowR * Math.cos((150 * Math.PI) / 180);
   const startY = arrowCy + arrowR * Math.sin((150 * Math.PI) / 180);
   const endX = arrowCx + arrowR * Math.cos((210 * Math.PI) / 180);
   const endY = arrowCy + arrowR * Math.sin((210 * Math.PI) / 180);
-  // Наконечник стрелки (остриё в endX, endY)
   const tipAngle = (210 * Math.PI) / 180;
   const b1x = endX + 3 * Math.cos(tipAngle + 0.6);
   const b1y = endY + 3 * Math.sin(tipAngle + 0.6);
@@ -42,7 +40,6 @@ export default function OzoneIcon({ size = 32, className = "" }: OzoneIconProps)
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {/* Левый верхний круг с цифрой 1 */}
       <circle cx={c1} cy={c1} r={r} />
       <text
         x={c1}
@@ -56,7 +53,6 @@ export default function OzoneIcon({ size = 32, className = "" }: OzoneIconProps)
       >
         1
       </text>
-      {/* Правый нижний круг со стрелкой обновления */}
       <circle cx={c2} cy={c2} r={r} />
       <path
         d={`M ${startX.toFixed(2)} ${startY.toFixed(2)} A ${arrowR} ${arrowR} 0 1 1 ${endX.toFixed(2)} ${endY.toFixed(2)}`}

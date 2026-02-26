@@ -1,5 +1,12 @@
 const ADMIN_TOKEN_KEY = "ozone_admin_token";
 
+/** Base URL бэкенда (из .env VITE_API_URL). Пусто = тот же домен. */
+export function getApiBase(): string {
+  const u = import.meta.env.VITE_API_URL;
+  if (typeof u !== "string" || !u.trim()) return "";
+  return String(u).replace(/\/$/, "");
+}
+
 export function getAdminToken(): string | null {
   return localStorage.getItem(ADMIN_TOKEN_KEY);
 }

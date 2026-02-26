@@ -75,7 +75,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
   };
 
   const handleDeleteClass = async (id: string) => {
-    if (!window.confirm("Bu sinf va barcha o‘quvchilarni o‘chirishni xohlaysizmi?")) return;
+    if (!window.confirm("Bu sinf va barcha o'quvchilarni o'chirishni xohlaysizmi?")) return;
     try {
       await dbDeleteClass(id);
       setClasses((prev) => prev.filter((c) => c.id !== id));
@@ -98,7 +98,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
   };
 
   const handleDeleteStudent = async (id: string) => {
-    if (!confirm("O‘quvchini o‘chirishni xohlaysizmi?")) return;
+    if (!confirm("O'quvchini o'chirishni xohlaysizmi?")) return;
     try {
       await dbDeleteStudent(id);
       if (selectedClass) fetchStudents(selectedClass.id);
@@ -182,7 +182,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                     className="flex-1 brutal-border bg-white px-4 py-3 font-bold focus:outline-none"
                   />
                   <button type="submit" className="brutal-btn-yellow flex items-center gap-2">
-                    <Plus size={20} /> Qo‘shish
+                    <Plus size={20} /> Qo'shish
                   </button>
                 </form>
 
@@ -199,7 +199,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                         </div>
                         <div>
                           <h3 className="font-display text-2xl uppercase">{cls.name}</h3>
-                          <p className="text-sm font-mono text-gray-500 uppercase">O‘quvchilarni boshqarish</p>
+                          <p className="text-sm font-mono text-gray-500 uppercase">O'quvchilarni boshqarish</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -209,7 +209,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                             handleDeleteClass(cls.id);
                           }}
                           className="p-2 text-gray-400 hover:text-red-600 transition-colors relative z-20"
-                          aria-label="O‘chirish"
+                          aria-label="O'chirish"
                         >
                           <Trash2 size={20} />
                         </button>
@@ -226,7 +226,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                   <h3 className="font-display text-2xl uppercase">Maktab statistikasi</h3>
                 </div>
                 <p className="font-mono text-sm leading-relaxed opacity-80">
-                  Platforma o‘qishni o‘yinlashtirish uchun. O‘quvchilarni coinlar bilan taqdirlang. +5 yoki +10
+                  Platforma o'qishni o'yinlashtirish uchun. O'quvchilarni coinlar bilan taqdirlang. +5 yoki +10
                   muvaffaqiyat, -1 qoidabuzarlik uchun.
                 </p>
               </div>
@@ -242,7 +242,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                 onClick={() => setSelectedClass(null)}
                 className="mb-6 flex items-center gap-2 font-bold hover:underline"
               >
-                <ArrowLeft size={20} /> Sinflar ro‘yxatiga qaytish
+                <ArrowLeft size={20} /> Sinflar ro'yxatiga qaytish
               </button>
 
               <div className="bg-[#FFD700] p-8 brutal-border mb-8">
@@ -250,7 +250,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                   <Users size={40} /> {selectedClass.name}
                 </h2>
                 <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase">
-                  <Users size={16} /> {students.length} o‘quvchi
+                  <Users size={16} /> {students.length} o'quvchi
                 </div>
               </div>
 
@@ -259,11 +259,11 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                   type="text"
                   value={newStudentName}
                   onChange={(e) => setNewStudentName(e.target.value)}
-                  placeholder="O‘quvchi ismi"
+                  placeholder="O'quvchi ismi"
                   className="flex-1 brutal-border bg-white px-4 py-3 font-bold focus:outline-none"
                 />
                 <button type="submit" className="brutal-btn bg-black text-white flex items-center gap-2">
-                  <UserPlus size={20} /> Qo‘shish
+                  <UserPlus size={20} /> Qo'shish
                 </button>
               </form>
 
@@ -282,7 +282,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
               <div className="space-y-4">
                 {students.length === 0 && (
                   <div className="text-center py-10 font-mono text-gray-500 uppercase">
-                    Bu sinfda hali o‘quvchilar yo‘q
+                    Bu sinfda hali o'quvchilar yo'q
                   </div>
                 )}
                 {students.map((student, index) => (
@@ -327,7 +327,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                       <button
                         onClick={() => handleDeleteStudent(student.id)}
                         className="p-2 text-gray-400 hover:text-red-600 transition-colors ml-2"
-                        aria-label="O‘chirish"
+                        aria-label="O'chirish"
                       >
                         <Trash2 size={20} />
                       </button>

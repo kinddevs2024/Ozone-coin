@@ -1,20 +1,15 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Ozone-coin Frontend
 
-# Run and deploy your AI Studio app
+Фронтенд для Ozone-coin. React, Vite, Tailwind. Работает с отдельным бэкендом по URL из переменной окружения.
 
-This contains everything you need to run your app locally.
+## Запуск
 
-View your app in AI Studio: https://ai.studio/apps/213cd22e-dc26-458f-9740-69de218a7415
+1. Скопируй `.env.example` в `.env`.
+2. Укажи `VITE_API_URL` — URL бэкенда (например `http://localhost:3001` для локальной разработки или `https://твой-api.railway.app` для продакшена). Если не указать — запросы идут на тот же домен.
+3. `npm install`
+4. `npm run dev` — приложение на http://localhost:5173
 
-## Run Locally
+## Сборка и деплой
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- `npm run build` — сборка в `dist/`
+- На Vercel/Netlify задай в настройках проекта переменную **VITE_API_URL** равной URL твоего бэкенда (например `https://ozone-api.railway.app`). Без этого на проде запросы будут уходить на тот же домен, что и фронт, и API не сработает.

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Coins, Lock, User, LogIn } from "lucide-react";
-import { setAdminToken } from "../api";
+import { setAdminToken, getApiBase } from "../api";
 
 type OnLogin = (token: string) => void;
 
@@ -16,7 +16,8 @@ export default function AdminLogin({ onLogin }: { onLogin: OnLogin }) {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/login", {
+      const url = getApiBase() + "/api/admin/login";
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user, password }),
@@ -26,7 +27,7 @@ export default function AdminLogin({ onLogin }: { onLogin: OnLogin }) {
         setAdminToken(data.token);
         onLogin(data.token);
       } else {
-        setError("Login yoki parol noto‘g‘ri");
+        setError("Login yoki parol noto'g'ri");
       }
     } catch {
       setError("Serverga ulanishda xatolik");
