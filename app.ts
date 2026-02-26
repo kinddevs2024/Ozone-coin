@@ -69,6 +69,18 @@ function requireAdmin(req: express.Request, res: express.Response, next: express
 const app = express();
 app.use(express.json());
 
+/** Vercel: restore path from ?path= when all /api/* are rewritten to /api?path=... */
+app.use((req, res, next) => {
+  const u = req.url || "";
+  const q = u.indexOf("?");
+  if (q === -1) return next();
+  const pathSeg = new URLSearchParams(u.slice(q)).get("path");
+  if (pathSeg != null) {
+    req.url = "/api/" + decodeURIComponent(pathSeg).replace(/^\/+/, "");
+  }
+  next();
+});
+
 /** Client IP from headers (Vercel/proxy) or socket */
 function getClientIp(req: express.Request): string {
   const forwarded = req.headers["x-forwarded-for"];

@@ -5,7 +5,6 @@
 
 import React, { useState, useMemo } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Analytics } from "@vercel/analytics/react";
 import GuestHome from "./pages/GuestHome";
 import GuestClass from "./pages/GuestClass";
 import AdminLogin from "./pages/AdminLogin";
@@ -43,7 +42,6 @@ export default function App() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <Analytics />
     </BrowserRouter>
   );
 }
