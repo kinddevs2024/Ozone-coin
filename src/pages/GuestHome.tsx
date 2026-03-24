@@ -1,12 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import { Coins, Users, ChevronRight, TrendingUp, BookOpen, Shield } from "lucide-react";
+import React, { useMemo, useState, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Coins, Users, ChevronRight, TrendingUp, BookOpen, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getClasses, type ClassItem } from "../db";
 
 export default function GuestHome() {
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  const filteredClasses = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return classes;
+    return classes.filter((cls) => cls.name.toLowerCase().includes(q));
+  }, [classes, searchQuery]);
 
   useEffect(() => {
     getClasses()
@@ -38,37 +46,97 @@ export default function GuestHome() {
             </div>
             <h1 className="font-display text-4xl tracking-tight uppercase">Ozone-coin</h1>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden md:flex items-center gap-2 font-mono text-sm font-bold uppercase">
-              <BookOpen size={18} />
-              O&apos;quvchilarni rag&apos;batlantirish tizimi
-            </span>
-            <Link
-              to="/admin"
-              className="flex items-center gap-1 font-mono text-sm font-bold uppercase opacity-80 hover:opacity-100"
-            >
-              <Shield size={18} /> Admin
-            </Link>
-          </div>
+          <span className="hidden md:flex items-center gap-2 font-mono text-sm font-bold uppercase">
+            <BookOpen size={18} />
+            O&apos;quvchilarni rag&apos;batlantirish tizimi
+          </span>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto p-6">
         <div className="mb-10">
-          <h2 className="font-display text-3xl mb-6 uppercase flex items-center gap-2">
-            <Users size={28} /> Sinflar
-          </h2>
+          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <h2 className="hidden md:flex font-display text-3xl uppercase items-center gap-2">
+              <Users size={28} /> Sinflar
+            </h2>
+            <div className="md:hidden relative w-full h-[52px]">
+              <AnimatePresence mode="wait" initial={false}>
+                {!isMobileSearchOpen ? (
+                  <motion.div
+                    key="mobile-header"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18 }}
+                    className="absolute inset-0 flex items-center justify-between"
+                  >
+                    <h2 className="font-display text-3xl uppercase flex items-center gap-2">
+                      <Users size={28} /> Sinflar
+                    </h2>
+                    <button
+                      type="button"
+                      aria-label="Open class search"
+                      onClick={() => setIsMobileSearchOpen(true)}
+                      className="w-[52px] h-[52px] brutal-border bg-white flex items-center justify-center"
+                    >
+                      <Search size={18} />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="mobile-search"
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute inset-0 brutal-border bg-white px-4 h-[52px] flex items-center gap-3"
+                  >
+                    <Search size={18} className="text-gray-500" />
+                    <input
+                      autoFocus
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Sinf qidirish..."
+                      className="w-full bg-transparent outline-none font-mono"
+                    />
+                    <button
+                      type="button"
+                      aria-label="Close class search"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setIsMobileSearchOpen(false);
+                      }}
+                      className="w-8 h-8 flex items-center justify-center"
+                    >
+                      <X size={18} />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <div className="hidden md:flex w-full md:max-w-sm brutal-border bg-white px-4 py-3 items-center gap-3">
+              <Search size={18} className="text-gray-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Sinf qidirish..."
+                className="w-full bg-transparent outline-none font-mono"
+              />
+            </div>
+          </div>
           <p className="text-gray-600 mb-6 font-mono text-sm">
             Sinfingizni tanlang va o&apos;quvchilar ballarini ko&apos;ring.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {classes.length === 0 ? (
+            {filteredClasses.length === 0 ? (
               <div className="col-span-2 text-center py-12 brutal-border bg-white p-8 font-mono text-gray-500">
                 Hali sinflar mavjud emas
               </div>
             ) : (
-              classes.map((cls) => (
+              filteredClasses.map((cls) => (
                 <Link
                   key={cls.id}
                   to={`/class/${cls.id}`}
@@ -106,3 +174,5 @@ export default function GuestHome() {
     </div>
   );
 }
+
+

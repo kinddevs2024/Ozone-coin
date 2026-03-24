@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
-import { Coins, Users, ArrowLeft, Award, Trophy } from "lucide-react";
+import React, { useMemo, useState, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { Coins, Users, ArrowLeft, Award, Trophy, Search, X } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { getClasses, getStudents, type StudentItem } from "../db";
 
@@ -10,6 +10,14 @@ export default function GuestClass() {
   const [students, setStudents] = useState<StudentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  const filteredStudents = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return students;
+    return students.filter((student) => student.name.toLowerCase().includes(q));
+  }, [students, searchQuery]);
 
   useEffect(() => {
     if (!classId) return;
@@ -72,15 +80,83 @@ export default function GuestClass() {
         </Link>
 
         <div className="bg-[#FFD700] p-8 brutal-border mb-8">
-          <h2 className="font-display text-5xl uppercase mb-2 flex items-center gap-3">
-            <Users size={40} /> {className}
-          </h2>
+          <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <h2 className="hidden md:flex font-display text-5xl uppercase items-center gap-3">
+              <Users size={40} /> {className}
+            </h2>
+            <div className="md:hidden relative w-full h-[52px]">
+              <AnimatePresence mode="wait" initial={false}>
+                {!isMobileSearchOpen ? (
+                  <motion.div
+                    key="mobile-class-header"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18 }}
+                    className="absolute inset-0 flex items-center justify-between"
+                  >
+                    <h2 className="font-display text-5xl uppercase flex items-center gap-3">
+                      <Users size={40} /> {className}
+                    </h2>
+                    <button
+                      type="button"
+                      aria-label="Open student search"
+                      onClick={() => setIsMobileSearchOpen(true)}
+                      className="w-[52px] h-[52px] brutal-border bg-white flex items-center justify-center"
+                    >
+                      <Search size={18} />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="mobile-student-search"
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute inset-0 brutal-border bg-white px-4 h-[52px] flex items-center gap-3"
+                  >
+                    <Search size={18} className="text-gray-500" />
+                    <input
+                      autoFocus
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="O&apos;quvchi qidirish..."
+                      className="w-full bg-transparent outline-none font-mono"
+                    />
+                    <button
+                      type="button"
+                      aria-label="Close student search"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setIsMobileSearchOpen(false);
+                      }}
+                      className="w-8 h-8 flex items-center justify-center"
+                    >
+                      <X size={18} />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <div className="hidden md:flex w-full md:max-w-sm brutal-border bg-white px-4 py-3 items-center gap-3">
+              <Search size={18} className="text-gray-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="O&apos;quvchi qidirish..."
+                className="w-full bg-transparent outline-none font-mono"
+              />
+            </div>
+          </div>
           <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase">
-            <Coins size={16} /> {students.length} o&apos;quvchi
+            <Coins size={16} /> {filteredStudents.length}{searchQuery.trim() ? ` / ${students.length}` : ""} o&apos;quvchi
           </div>
         </div>
 
-        {students.length > 0 && (
+        {filteredStudents.length > 0 && !isMobileSearchOpen && (
           <div className="mb-8 p-6 border-2 border-dashed border-black flex items-center gap-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <Award size={40} className="text-[#FFD700]" />
             <div>
@@ -88,19 +164,19 @@ export default function GuestClass() {
                 <Trophy size={24} /> Sinf yetakchisi
               </h4>
               <p className="font-bold text-2xl">
-                {students[0].name} — {students[0].coins} coin
+                {filteredStudents[0].name} — {filteredStudents[0].coins} coin
               </p>
             </div>
           </div>
         )}
 
         <div className="space-y-4">
-          {students.length === 0 ? (
+          {filteredStudents.length === 0 ? (
             <div className="text-center py-10 font-mono text-gray-500 uppercase brutal-border bg-white p-8">
               Bu sinfda hali o&apos;quvchilar yo&apos;q
             </div>
           ) : (
-            students.map((student, index) => (
+            filteredStudents.map((student, index) => (
               <motion.div
                 layout
                 key={student.id}
@@ -125,3 +201,5 @@ export default function GuestClass() {
     </div>
   );
 }
+
+
