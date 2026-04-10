@@ -66,6 +66,10 @@ export default function GuestHome() {
             <h1 className="font-display text-4xl tracking-tight uppercase">Ozone-coin</h1>
           </button>
           <div className="flex items-center gap-2">
+            <span className="hidden md:flex items-center gap-2 font-mono text-sm font-bold uppercase">
+              <BookOpen size={18} />
+              O&apos;quvchilarni rag&apos;batlantirish tizimi
+            </span>
             <Link
               to="/community"
               className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:gap-2"
@@ -75,10 +79,6 @@ export default function GuestHome() {
               <MessageSquareMore size={18} />
               <span className="hidden sm:inline">Community</span>
             </Link>
-            <span className="hidden md:flex items-center gap-2 font-mono text-sm font-bold uppercase">
-              <BookOpen size={18} />
-              O&apos;quvchilarni rag&apos;batlantirish tizimi
-            </span>
           </div>
         </div>
       </header>
