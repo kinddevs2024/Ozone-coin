@@ -12,7 +12,9 @@ import {
   Award,
   LogOut,
   Settings,
+  MessageSquareMore,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { clearAdminToken } from "../api";
 import {
   getClasses,
@@ -121,6 +123,13 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
     onLogout();
   };
 
+  const handleBrandClick = async () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setIsLoading(true);
+    await fetchClasses();
+    if (selectedClass) await fetchStudents(selectedClass.id);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#FFD700] flex items-center justify-center">
@@ -138,20 +147,34 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
     <div className="min-h-screen bg-[#f5f5f5] pb-20">
       <header className="bg-[#FFD700] border-b-4 border-black p-6 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleBrandClick}
+            className="flex items-center gap-3 text-black"
+            aria-label="Sahifadagi ma'lumotlarni yangilash"
+          >
             <div className="bg-white p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
               <Coins className="text-black" size={32} />
             </div>
             <h1 className="font-display text-4xl tracking-tight uppercase">Ozone-coin</h1>
-          </div>
+          </button>
           <div className="flex items-center gap-2">
             <span className="hidden md:flex items-center gap-1 font-mono text-sm font-bold uppercase">
               <Settings size={16} /> Admin panel
             </span>
+            <Link
+              to="/community"
+              className="brutal-btn flex h-12 w-12 shrink-0 items-center justify-center bg-white p-0 sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-2"
+              title="Community"
+              aria-label="Community sahifasini ochish"
+            >
+              <MessageSquareMore size={18} /> <span className="hidden sm:inline">Community</span>
+            </Link>
             <button
               onClick={handleLogout}
-              className="brutal-btn flex items-center gap-2 bg-white"
+              className="brutal-btn flex h-12 w-12 shrink-0 items-center justify-center bg-white p-0 sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-2"
               title="Chiqish"
+              aria-label="Chiqish"
             >
               <LogOut size={18} /> <span className="hidden sm:inline">Chiqish</span>
             </button>
@@ -181,8 +204,12 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                     placeholder="Sinf nomi (masalan 7A)"
                     className="flex-1 brutal-border bg-white px-4 py-3 font-bold focus:outline-none"
                   />
-                  <button type="submit" className="brutal-btn-yellow flex items-center gap-2">
-                    <Plus size={20} /> Qo'shish
+                  <button
+                    type="submit"
+                    className="brutal-btn-yellow flex h-[52px] w-[52px] shrink-0 items-center justify-center p-0 sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-2"
+                    aria-label="Sinf qo'shish"
+                  >
+                    <Plus size={20} /> <span className="hidden sm:inline">Qo'shish</span>
                   </button>
                 </form>
 
@@ -262,8 +289,12 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                   placeholder="O'quvchi ismi"
                   className="flex-1 brutal-border bg-white px-4 py-3 font-bold focus:outline-none"
                 />
-                <button type="submit" className="brutal-btn bg-black text-white flex items-center gap-2">
-                  <UserPlus size={20} /> Qo'shish
+                <button
+                  type="submit"
+                  className="brutal-btn flex h-[52px] w-[52px] shrink-0 items-center justify-center bg-black p-0 text-white sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-2"
+                  aria-label="O'quvchi qo'shish"
+                >
+                  <UserPlus size={20} /> <span className="hidden sm:inline">Qo'shish</span>
                 </button>
               </form>
 

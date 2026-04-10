@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Coins, Users, ChevronRight, TrendingUp, BookOpen, Search, X } from "lucide-react";
+import { Coins, Users, ChevronRight, TrendingUp, BookOpen, Search, X, MessageSquareMore } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getClasses, type ClassItem } from "../db";
 
@@ -10,6 +10,17 @@ export default function GuestHome() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
+  const fetchClassesList = async () => {
+    try {
+      const data = await getClasses();
+      setClasses(data);
+    } catch {
+      setClasses([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filteredClasses = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return classes;
@@ -17,11 +28,14 @@ export default function GuestHome() {
   }, [classes, searchQuery]);
 
   useEffect(() => {
-    getClasses()
-      .then(setClasses)
-      .catch(() => setClasses([]))
-      .finally(() => setIsLoading(false));
+    fetchClassesList();
   }, []);
+
+  const handleBrandClick = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setIsLoading(true);
+    fetchClassesList();
+  };
 
   if (isLoading) {
     return (
@@ -40,16 +54,32 @@ export default function GuestHome() {
     <div className="min-h-screen bg-[#f5f5f5] pb-20">
       <header className="bg-[#FFD700] border-b-4 border-black p-6 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleBrandClick}
+            className="flex items-center gap-3 text-black"
+            aria-label="Sahifadagi ma'lumotlarni yangilash"
+          >
             <div className="bg-white p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
               <Coins className="text-black" size={32} />
             </div>
             <h1 className="font-display text-4xl tracking-tight uppercase">Ozone-coin</h1>
+          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/community"
+              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:gap-2"
+              title="Community"
+              aria-label="Community sahifasini ochish"
+            >
+              <MessageSquareMore size={18} />
+              <span className="hidden sm:inline">Community</span>
+            </Link>
+            <span className="hidden md:flex items-center gap-2 font-mono text-sm font-bold uppercase">
+              <BookOpen size={18} />
+              O&apos;quvchilarni rag&apos;batlantirish tizimi
+            </span>
           </div>
-          <span className="hidden md:flex items-center gap-2 font-mono text-sm font-bold uppercase">
-            <BookOpen size={18} />
-            O&apos;quvchilarni rag&apos;batlantirish tizimi
-          </span>
         </div>
       </header>
 

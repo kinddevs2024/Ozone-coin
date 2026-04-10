@@ -7,6 +7,7 @@ import React, { useState, useMemo } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import GuestHome from "./pages/GuestHome";
 import GuestClass from "./pages/GuestClass";
+import CommunityPage from "./pages/CommunityPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminApp from "./pages/AdminApp";
 import { getAdminToken, setAdminToken } from "./api";
@@ -30,6 +31,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<GuestHome />} />
         <Route path="/class/:classId" element={<GuestClass />} />
+        <Route path="/community" element={<CommunityPage isAdmin={isAdmin} />} />
         <Route
           path="/admin"
           element={

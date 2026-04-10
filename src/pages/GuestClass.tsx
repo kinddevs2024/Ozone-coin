@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Coins, Users, ArrowLeft, Award, Trophy, Search, X } from "lucide-react";
+import { Coins, Users, ArrowLeft, Award, Trophy, Search, X, MessageSquareMore } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { getClasses, getStudents, type StudentItem } from "../db";
 
@@ -13,6 +13,25 @@ export default function GuestClass() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
+  const fetchClassData = async () => {
+    if (!classId) return;
+    setNotFound(false);
+    try {
+      const [classes, st] = await Promise.all([getClasses(), getStudents(classId)]);
+      const cls = classes.find((c) => c.id === classId);
+      if (cls) {
+        setClassName(cls.name);
+      } else {
+        setNotFound(true);
+      }
+      setStudents(st);
+    } catch {
+      setNotFound(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filteredStudents = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return students;
@@ -20,17 +39,14 @@ export default function GuestClass() {
   }, [students, searchQuery]);
 
   useEffect(() => {
-    if (!classId) return;
-    Promise.all([getClasses(), getStudents(classId)])
-      .then(([classes, st]) => {
-        const cls = classes.find((c) => c.id === classId);
-        if (cls) setClassName(cls.name);
-        else setNotFound(true);
-        setStudents(st);
-      })
-      .catch(() => setNotFound(true))
-      .finally(() => setIsLoading(false));
+    fetchClassData();
   }, [classId]);
+
+  const handleBrandClick = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setIsLoading(true);
+    fetchClassData();
+  };
 
   if (isLoading) {
     return (
@@ -62,12 +78,26 @@ export default function GuestClass() {
     <div className="min-h-screen bg-[#f5f5f5] pb-20">
       <header className="bg-[#FFD700] border-b-4 border-black p-6 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleBrandClick}
+            className="flex items-center gap-3 text-black"
+            aria-label="Sahifadagi ma'lumotlarni yangilash"
+          >
             <div className="bg-white p-2 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
               <Coins className="text-black" size={32} />
             </div>
             <h1 className="font-display text-4xl tracking-tight uppercase">Ozone-coin</h1>
-          </div>
+          </button>
+          <Link
+            to="/community"
+            className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:gap-2"
+            title="Community"
+            aria-label="Community sahifasini ochish"
+          >
+            <MessageSquareMore size={18} />
+            <span className="hidden sm:inline">Community</span>
+          </Link>
         </div>
       </header>
 

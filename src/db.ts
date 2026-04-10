@@ -15,6 +15,14 @@ export interface StudentItem {
   class_id: string;
 }
 
+export interface CommunityPostItem {
+  id: string;
+  text: string;
+  imageDataUrl: string | null;
+  createdAt: string;
+  author: "admin";
+}
+
 const base = () => getApiBase();
 
 const api = async (path: string, opts?: RequestInit) => {
@@ -77,4 +85,34 @@ export async function updateCoins(studentId: string, amount: number): Promise<vo
     headers: authHeaders(),
     body: JSON.stringify({ amount }),
   });
+}
+
+export async function getCommunityPosts(): Promise<CommunityPostItem[]> {
+  try {
+    const data = await api("/api/community-posts");
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function addCommunityPost(payload: {
+  text: string;
+  imageDataUrl?: string | null;
+}): Promise<CommunityPostItem> {
+  const data = await api("/api/community-posts", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      text: payload.text.trim(),
+      imageDataUrl: payload.imageDataUrl ?? null,
+    }),
+  });
+  return {
+    id: data.id,
+    text: data.text ?? "",
+    imageDataUrl: data.imageDataUrl ?? null,
+    createdAt: data.createdAt,
+    author: "admin",
+  };
 }
