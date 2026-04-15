@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { clearAdminToken } from "../api";
+import HeaderMenu from "../components/HeaderMenu";
 import {
   getClasses,
   getStudents,
@@ -173,43 +174,12 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
             </div>
             <h1 className="font-display text-4xl tracking-tight uppercase">Ozone-coin</h1>
           </button>
-          <div className="flex items-center gap-2">
-            <span className="hidden md:flex items-center gap-1 font-mono text-sm font-bold uppercase">
-              <Settings size={16} /> Admin panel
-            </span>
-            <Link
-              to="/rules"
-              className="brutal-btn flex h-12 w-12 shrink-0 items-center justify-center bg-white p-0"
-              title="Qoidalar"
-              aria-label="Qoidalar sahifasini ochish"
-            >
-              <BookOpen size={18} />
-            </Link>
-            <Link
-              to="/analytics"
-              className="brutal-btn flex h-12 w-12 shrink-0 items-center justify-center bg-white p-0 sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-2"
-              title="Analitika"
-              aria-label="Analitika sahifasini ochish"
-            >
-              <BarChart3 size={18} /> <span className="hidden sm:inline">Analitika</span>
-            </Link>
-            <Link
-              to="/community"
-              className="brutal-btn flex h-12 w-12 shrink-0 items-center justify-center bg-white p-0 sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-2"
-              title="Community"
-              aria-label="Community sahifasini ochish"
-            >
-              <MessageSquareMore size={18} /> <span className="hidden sm:inline">Community</span>
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="brutal-btn flex h-12 w-12 shrink-0 items-center justify-center bg-white p-0 sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-2"
-              title="Chiqish"
-              aria-label="Chiqish"
-            >
-              <LogOut size={18} /> <span className="hidden sm:inline">Chiqish</span>
-            </button>
-          </div>
+          <HeaderMenu items={[
+            { label: "Qoidalar", icon: <BookOpen size={18} />, to: "/rules" },
+            { label: "Analitika", icon: <BarChart3 size={18} />, to: "/analytics" },
+            { label: "Community", icon: <MessageSquareMore size={18} />, to: "/community" },
+            { label: "Chiqish", icon: <LogOut size={18} />, onClick: handleLogout },
+          ]} />
         </div>
       </header>
 

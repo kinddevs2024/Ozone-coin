@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Coins, Users, ChevronRight, TrendingUp, BookOpen, Search, X, MessageSquareMore, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getClasses, type ClassItem } from "../db";
+import HeaderMenu from "../components/HeaderMenu";
 
 export default function GuestHome() {
   const [classes, setClasses] = useState<ClassItem[]>([]);
@@ -65,32 +66,11 @@ export default function GuestHome() {
             </div>
             <h1 className="font-display text-4xl tracking-tight uppercase">Ozone-coin</h1>
           </button>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/rules"
-              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
-              title="Qoidalar"
-              aria-label="Qoidalar sahifasini ochish"
-            >
-              <BookOpen size={18} />
-            </Link>
-            <Link
-              to="/analytics"
-              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
-              title="Analitika"
-              aria-label="Analitika sahifasini ochish"
-            >
-              <BarChart3 size={18} />
-            </Link>
-            <Link
-              to="/community"
-              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
-              title="Community"
-              aria-label="Community sahifasini ochish"
-            >
-              <MessageSquareMore size={18} />
-            </Link>
-          </div>
+          <HeaderMenu items={[
+            { label: "Qoidalar", icon: <BookOpen size={18} />, to: "/rules" },
+            { label: "Analitika", icon: <BarChart3 size={18} />, to: "/analytics" },
+            { label: "Community", icon: <MessageSquareMore size={18} />, to: "/community" },
+          ]} />
         </div>
       </header>
 
