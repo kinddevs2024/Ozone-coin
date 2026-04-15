@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { Coins, UserRound, ClipboardList, History, Scale, ArrowRight } from "lucide-react";
+import { motion } from "motion/react";
 import StudentLayout from "../components/StudentLayout";
 import { getStudentToken } from "../api";
 import { getStudentAssignments, getStudentCoinHistory, getStudentMe } from "../db";
@@ -13,6 +14,7 @@ export default function StudentDashboardPage() {
   const [latestAssignmentText, setLatestAssignmentText] = useState("");
   const [historyMonthsCount, setHistoryMonthsCount] = useState(0);
   const [historyEntriesCount, setHistoryEntriesCount] = useState(0);
+  const [animatedCoins, setAnimatedCoins] = useState(0);
 
   useEffect(() => {
     if (!token) return;
@@ -41,6 +43,23 @@ export default function StudentDashboardPage() {
       });
   }, [token]);
 
+  useEffect(() => {
+    const to = student?.coins ?? 0;
+    const from = animatedCoins;
+    if (to === from) return;
+    const duration = 800;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setAnimatedCoins(Math.round(from + (to - from) * eased));
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [student?.coins]);
+
   if (!token) return <Navigate to="/student" replace />;
 
   return (
@@ -57,7 +76,15 @@ export default function StudentDashboardPage() {
           <div className="font-display text-2xl uppercase mb-2 inline-flex items-center gap-2">
             <Coins size={22} /> Coins
           </div>
-          <p className="font-display text-5xl">{student?.coins ?? 0}</p>
+          <motion.p
+            key={student?.coins ?? 0}
+            initial={{ opacity: 0.6, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="font-display text-5xl"
+          >
+            {animatedCoins}
+          </motion.p>
           <Link to="/student/coins" className="inline-flex mt-3 font-mono text-sm underline items-center gap-1">
             Open coins page <ArrowRight size={14} />
           </Link>
