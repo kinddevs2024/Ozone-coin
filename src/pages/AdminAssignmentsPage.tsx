@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Coins, CheckCircle2, ClipboardCheck, ArrowLeft, ImagePlus, Send } from "lucide-react";
+import { Coins, CheckCircle2, ClipboardCheck, ArrowLeft, ImagePlus, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   getAdminAssignments,
@@ -14,6 +14,61 @@ import {
 } from "../db";
 
 type Filter = "all" | "pending" | "answered" | "reviewed";
+type SelectOption = { value: string; label: string };
+
+function CustomSelect({
+  placeholder,
+  value,
+  options,
+  open,
+  setOpen,
+  onSelect,
+  disabled,
+}: {
+  placeholder: string;
+  value: string;
+  options: SelectOption[];
+  open: boolean;
+  setOpen: (v: boolean) => void;
+  onSelect: (value: string) => void;
+  disabled?: boolean;
+}) {
+  const selected = options.find((o) => o.value === value);
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => !disabled && setOpen(!open)}
+        className="w-full brutal-border px-4 py-3 font-mono flex items-center justify-between bg-white disabled:opacity-60"
+      >
+        <span>{selected?.label ?? placeholder}</span>
+        <ChevronDown size={16} className={`${open ? "rotate-180" : ""} transition-transform`} />
+      </button>
+      {open && !disabled && (
+        <div className="absolute left-0 right-0 mt-1 brutal-border bg-white z-30 max-h-56 overflow-auto">
+          {options.length === 0 ? (
+            <div className="px-4 py-3 font-mono text-sm text-gray-500">No options</div>
+          ) : (
+            options.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => {
+                  onSelect(o.value);
+                  setOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 font-mono hover:bg-yellow-50 border-b last:border-b-0 border-gray-200"
+              >
+                {o.label}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AdminAssignmentsPage() {
   const [items, setItems] = useState<AdminAssignmentItem[]>([]);
@@ -29,6 +84,9 @@ export default function AdminAssignmentsPage() {
   const [imageDataUrl, setImageDataUrl] = useState("");
   const [imageName, setImageName] = useState("");
   const [sending, setSending] = useState(false);
+  const [isComposerOpen, setIsComposerOpen] = useState(true);
+  const [classSelectOpen, setClassSelectOpen] = useState(false);
+  const [studentSelectOpen, setStudentSelectOpen] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(true);
   const [reviewText, setReviewText] = useState<Record<string, string>>({});
@@ -79,6 +137,9 @@ export default function AdminAssignmentsPage() {
     return items.filter((x) => !!x.reviewedAt);
   }, [items, filter]);
 
+  const classOptions: SelectOption[] = classes.map((c) => ({ value: c.id, label: c.name }));
+  const studentOptions: SelectOption[] = students.map((s) => ({ value: s.id, label: s.name }));
+
   const status = (a: AdminAssignmentItem) => {
     if (a.reviewedAt) return { label: "Reviewed", cls: "bg-green-50 border-green-600 text-green-700" };
     if (a.answeredAt) return { label: "Answered", cls: "bg-yellow-50 border-yellow-600 text-yellow-700" };
@@ -103,157 +164,169 @@ export default function AdminAssignmentsPage() {
 
       <main className="max-w-4xl mx-auto p-6 space-y-4">
         <section className="brutal-border bg-white p-6 space-y-3">
-          <h2 className="font-display text-2xl uppercase">Send homework</h2>
-          <form
-            className="space-y-3"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (!selectedClassId) return window.alert("Select class");
-              if (targetType === "student" && !selectedStudentId) return window.alert("Select student");
-              if (!title.trim()) return window.alert("Enter title");
-              if (!text.trim() && !link.trim() && !imageDataUrl.trim()) {
-                return window.alert("Fill text, link or image");
-              }
-              setSending(true);
-              try {
-                if (targetType === "class") {
-                  await createAssignmentsForClass({
-                    classId: selectedClassId,
-                    title: title.trim(),
-                    text: text.trim(),
-                    link: link.trim() || null,
-                    imageDataUrl: imageDataUrl || null,
-                    dueAt: dueAt || null,
-                  });
-                } else {
-                  await createAssignment({
-                    studentId: selectedStudentId,
-                    classId: selectedClassId,
-                    title: title.trim(),
-                    text: text.trim(),
-                    link: link.trim() || null,
-                    imageDataUrl: imageDataUrl || null,
-                    dueAt: dueAt || null,
-                  });
-                }
-                setTitle("");
-                setText("");
-                setLink("");
-                setDueAt("");
-                setImageDataUrl("");
-                setImageName("");
-                await load();
-                window.alert("Homework sent.");
-              } catch {
-                window.alert("Could not send homework.");
-              } finally {
-                setSending(false);
-              }
-            }}
+          <button
+            type="button"
+            onClick={() => setIsComposerOpen((v) => !v)}
+            className="w-full flex items-center justify-between"
           >
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setTargetType("student")}
-                className={`rounded-full border-2 border-black px-4 py-2 font-mono text-xs uppercase font-bold ${
-                  targetType === "student" ? "bg-black text-white" : "bg-white text-black"
-                }`}
-              >
-                To student
-              </button>
-              <button
-                type="button"
-                onClick={() => setTargetType("class")}
-                className={`rounded-full border-2 border-black px-4 py-2 font-mono text-xs uppercase font-bold ${
-                  targetType === "class" ? "bg-black text-white" : "bg-white text-black"
-                }`}
-              >
-                To whole class
-              </button>
-            </div>
+            <h2 className="font-display text-2xl uppercase">Send homework</h2>
+            {isComposerOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          </button>
 
-            <select
-              value={selectedClassId}
-              onChange={(e) => setSelectedClassId(e.target.value)}
-              className="w-full brutal-border px-4 py-3 font-mono"
+          {isComposerOpen && (
+            <form
+              className="space-y-3"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!selectedClassId) return window.alert("Select class");
+                if (targetType === "student" && !selectedStudentId) return window.alert("Select student");
+                if (!title.trim()) return window.alert("Enter title");
+                if (!text.trim() && !link.trim() && !imageDataUrl.trim()) {
+                  return window.alert("Fill text, link or image");
+                }
+                setSending(true);
+                try {
+                  if (targetType === "class") {
+                    await createAssignmentsForClass({
+                      classId: selectedClassId,
+                      title: title.trim(),
+                      text: text.trim(),
+                      link: link.trim() || null,
+                      imageDataUrl: imageDataUrl || null,
+                      dueAt: dueAt || null,
+                    });
+                  } else {
+                    await createAssignment({
+                      studentId: selectedStudentId,
+                      classId: selectedClassId,
+                      title: title.trim(),
+                      text: text.trim(),
+                      link: link.trim() || null,
+                      imageDataUrl: imageDataUrl || null,
+                      dueAt: dueAt || null,
+                    });
+                  }
+                  setTitle("");
+                  setText("");
+                  setLink("");
+                  setDueAt("");
+                  setImageDataUrl("");
+                  setImageName("");
+                  await load();
+                  window.alert("Homework sent.");
+                } catch {
+                  window.alert("Could not send homework.");
+                } finally {
+                  setSending(false);
+                }
+              }}
             >
-              <option value="">Select class</option>
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-
-            {targetType === "student" && (
-              <select
-                value={selectedStudentId}
-                onChange={(e) => setSelectedStudentId(e.target.value)}
-                className="w-full brutal-border px-4 py-3 font-mono"
-              >
-                <option value="">Select student</option>
-                {students.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            )}
-
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Homework title"
-              className="w-full brutal-border px-4 py-3 font-mono"
-            />
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Homework description"
-              className="w-full min-h-24 brutal-border px-4 py-3 font-mono"
-            />
-            <input
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              placeholder="Link (optional)"
-              className="w-full brutal-border px-4 py-3 font-mono"
-            />
-            <input
-              type="date"
-              value={dueAt}
-              onChange={(e) => setDueAt(e.target.value)}
-              className="w-full brutal-border px-4 py-3 font-mono"
-            />
-            <div className="space-y-2">
-              <label className="brutal-btn-yellow inline-flex h-[52px] cursor-pointer items-center justify-center gap-2 px-4 py-2">
-                <ImagePlus size={16} />
-                <span>Upload image</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    if (!file.type.startsWith("image/")) return window.alert("Only image files are allowed.");
-                    if (file.size > 5 * 1024 * 1024) return window.alert("Image should be <= 5MB.");
-                    try {
-                      const dataUrl = await fileToDataUrl(file);
-                      setImageDataUrl(dataUrl);
-                      setImageName(file.name);
-                    } catch {
-                      window.alert("Could not read image file.");
-                    }
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetType("student");
+                    setStudentSelectOpen(false);
                   }}
+                  className={`rounded-full border-2 border-black px-4 py-2 font-mono text-xs uppercase font-bold ${
+                    targetType === "student" ? "bg-black text-white" : "bg-white text-black"
+                  }`}
+                >
+                  To student
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetType("class");
+                    setStudentSelectOpen(false);
+                  }}
+                  className={`rounded-full border-2 border-black px-4 py-2 font-mono text-xs uppercase font-bold ${
+                    targetType === "class" ? "bg-black text-white" : "bg-white text-black"
+                  }`}
+                >
+                  To whole class
+                </button>
+              </div>
+
+              <CustomSelect
+                placeholder="Select class"
+                value={selectedClassId}
+                options={classOptions}
+                open={classSelectOpen}
+                setOpen={(v) => {
+                  setClassSelectOpen(v);
+                  if (v) setStudentSelectOpen(false);
+                }}
+                onSelect={(v) => setSelectedClassId(v)}
+              />
+
+              {targetType === "student" && (
+                <CustomSelect
+                  placeholder="Select student"
+                  value={selectedStudentId}
+                  options={studentOptions}
+                  open={studentSelectOpen}
+                  setOpen={(v) => setStudentSelectOpen(v)}
+                  onSelect={(v) => setSelectedStudentId(v)}
+                  disabled={!selectedClassId}
                 />
-              </label>
-              {imageName ? <p className="font-mono text-xs">{imageName}</p> : null}
-              {imageDataUrl ? <img src={imageDataUrl} alt="" className="max-h-56 w-full object-cover brutal-border" /> : null}
-            </div>
-            <button className="brutal-btn bg-black text-white inline-flex items-center gap-2 px-4 py-2" disabled={sending}>
-              <Send size={16} /> {sending ? "Sending..." : targetType === "class" ? "Send to class" : "Send"}
-            </button>
-          </form>
+              )}
+
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Homework title"
+                className="w-full brutal-border px-4 py-3 font-mono"
+              />
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Homework description"
+                className="w-full min-h-24 brutal-border px-4 py-3 font-mono"
+              />
+              <input
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="Link (optional)"
+                className="w-full brutal-border px-4 py-3 font-mono"
+              />
+              <input
+                type="date"
+                value={dueAt}
+                onChange={(e) => setDueAt(e.target.value)}
+                className="w-full brutal-border px-4 py-3 font-mono"
+              />
+              <div className="space-y-2">
+                <label className="brutal-btn-yellow inline-flex h-[52px] cursor-pointer items-center justify-center gap-2 px-4 py-2">
+                  <ImagePlus size={16} />
+                  <span>Upload image</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (!file.type.startsWith("image/")) return window.alert("Only image files are allowed.");
+                      if (file.size > 5 * 1024 * 1024) return window.alert("Image should be <= 5MB.");
+                      try {
+                        const dataUrl = await fileToDataUrl(file);
+                        setImageDataUrl(dataUrl);
+                        setImageName(file.name);
+                      } catch {
+                        window.alert("Could not read image file.");
+                      }
+                    }}
+                  />
+                </label>
+                {imageName ? <p className="font-mono text-xs">{imageName}</p> : null}
+                {imageDataUrl ? <img src={imageDataUrl} alt="" className="max-h-56 w-full object-cover brutal-border" /> : null}
+              </div>
+              <button className="brutal-btn bg-black text-white inline-flex items-center gap-2 px-4 py-2" disabled={sending}>
+                <Send size={16} /> {sending ? "Sending..." : targetType === "class" ? "Send to class" : "Send"}
+              </button>
+            </form>
+          )}
         </section>
 
         <div className="flex flex-wrap gap-2">
