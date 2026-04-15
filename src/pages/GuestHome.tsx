@@ -84,12 +84,11 @@ export default function GuestHome() {
             </Link>
             <Link
               to="/community"
-              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:gap-2"
+              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
               title="Community"
               aria-label="Community sahifasini ochish"
             >
               <MessageSquareMore size={18} />
-              <span className="hidden sm:inline">Community</span>
             </Link>
           </div>
         </div>
