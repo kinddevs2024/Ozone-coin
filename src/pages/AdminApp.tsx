@@ -16,19 +16,21 @@ import {
   RotateCcw,
   BarChart3,
   BookOpen,
+  ClipboardPlus,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { clearAdminToken } from "../api";
 import HeaderMenu from "../components/HeaderMenu";
 import {
   getClasses,
-  getStudents,
+  getAdminStudents,
   addClass,
   deleteClass as dbDeleteClass,
   addStudent,
   deleteStudent as dbDeleteStudent,
   updateCoins,
   resetClassCoins,
+  createAssignment,
   type ClassItem,
   type StudentItem,
 } from "../db";
@@ -62,7 +64,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
 
   const fetchStudents = async (classId: string) => {
     try {
-      const data = await getStudents(classId);
+      const data = await getAdminStudents(classId);
       setStudents(data);
     } catch (err) {
       console.error("Failed to fetch students", err);
@@ -96,8 +98,13 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
     e.preventDefault();
     if (!newStudentName.trim() || !selectedClass) return;
     try {
-      await addStudent(newStudentName, selectedClass.id);
+      const created = await addStudent(newStudentName, selectedClass.id);
       setNewStudentName("");
+      if (created.email && created.initialPassword) {
+        window.alert(
+          `Account created.\nEmail: ${created.email}\nTemporary password: ${created.initialPassword}\nStudent must change password at first login.`
+        );
+      }
       fetchStudents(selectedClass.id);
     } catch (err) {
       console.error("Failed to add student", err);
@@ -120,6 +127,27 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
       if (selectedClass) fetchStudents(selectedClass.id);
     } catch (err) {
       console.error("Failed to update coins", err);
+    }
+  };
+
+  const handleCreateAssignment = async (student: StudentItem) => {
+    if (!selectedClass) return;
+    const text = window.prompt(`Task text for ${student.name}:`, "");
+    if (text === null) return;
+    const link = window.prompt("Task link (optional):", "");
+    const imageDataUrl = window.prompt("Task image URL (optional):", "");
+    try {
+      await createAssignment({
+        studentId: student.id,
+        classId: selectedClass.id,
+        text: text.trim(),
+        link: link?.trim() || null,
+        imageDataUrl: imageDataUrl?.trim() || null,
+      });
+      window.alert("Assignment sent to student.");
+    } catch (err) {
+      console.error("Failed to create assignment", err);
+      window.alert("Could not create assignment.");
     }
   };
 
@@ -340,6 +368,14 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                         <div className="flex items-center gap-1 text-[#B8860B] font-mono font-bold">
                           <Coins size={14} /> {student.coins} coin
                         </div>
+                        {student.email && (
+                          <div className="font-mono text-xs text-gray-600 mt-1">
+                            Login: {student.email}
+                            {student.mustChangePassword && student.initialPassword
+                              ? ` | Temp password: ${student.initialPassword}`
+                              : " | Password changed"}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -364,6 +400,14 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                           -1
                         </button>
                       </div>
+                      <button
+                        onClick={() => handleCreateAssignment(student)}
+                        className="p-2 text-gray-500 hover:text-black transition-colors"
+                        aria-label="Yangi topshiriq berish"
+                        title="Topshiriq berish"
+                      >
+                        <ClipboardPlus size={20} />
+                      </button>
                       <button
                         onClick={() => handleDeleteStudent(student.id)}
                         className="p-2 text-gray-400 hover:text-red-600 transition-colors ml-2"

@@ -1,7 +1,7 @@
 /**
  * Обращение к API бэкенда (URL задаётся через VITE_API_URL).
  */
-import { authHeaders, getApiBase } from "./api";
+import { authHeaders, getApiBase, studentAuthHeaders } from "./api";
 
 export interface ClassItem {
   id: string;
@@ -13,7 +13,42 @@ export interface StudentItem {
   name: string;
   coins: number;
   class_id: string;
+  email?: string;
+  mustChangePassword?: boolean;
+  initialPassword?: string | null;
 }
+
+export interface StudentLoginResult {
+  token: string;
+  mustChangePassword: boolean;
+  student: {
+    id: string;
+    name: string;
+    email: string;
+    class_id: string;
+    coins: number;
+  };
+}
+export interface StudentAssignmentItem {
+  id: string;
+  studentId: string;
+  classId: string;
+  text: string;
+  imageDataUrl: string | null;
+  link: string | null;
+  createdAt: string;
+  answerText: string | null;
+  answerImageDataUrl: string | null;
+  answerLink: string | null;
+  answeredAt: string | null;
+}
+export interface CoinHistoryItem {
+  amount: number;
+  type: string;
+  note: string;
+  createdAt: string;
+}
+export type CoinHistoryByMonth = Record<string, CoinHistoryItem[]>;
 
 export interface CommunityPostItem {
   id: string;
@@ -62,6 +97,15 @@ export async function getStudents(classId: string): Promise<StudentItem[]> {
   }
 }
 
+export async function getAdminStudents(classId: string): Promise<StudentItem[]> {
+  try {
+    const data = await api(`/api/admin/classes/${classId}/students`, { headers: authHeaders() });
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function addClass(name: string): Promise<{ id: string }> {
   const data = await api("/api/classes", {
     method: "POST",
@@ -75,13 +119,13 @@ export async function deleteClass(id: string): Promise<void> {
   await api(`/api/classes/${id}`, { method: "DELETE", headers: authHeaders() });
 }
 
-export async function addStudent(name: string, classId: string): Promise<{ id: string }> {
+export async function addStudent(name: string, classId: string): Promise<StudentItem> {
   const data = await api("/api/students", {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ name: name.trim(), classId }),
   });
-  return { id: data.id };
+  return { id: data.id, ...data };
 }
 
 export async function deleteStudent(id: string): Promise<void> {
@@ -93,6 +137,62 @@ export async function updateCoins(studentId: string, amount: number): Promise<vo
     method: "PATCH",
     headers: authHeaders(),
     body: JSON.stringify({ amount }),
+  });
+}
+
+export async function studentLogin(identifier: string, password: string): Promise<StudentLoginResult> {
+  const data = await api("/api/student/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ identifier: identifier.trim(), password }),
+  });
+  return data as StudentLoginResult;
+}
+
+export async function studentChangePassword(newPassword: string): Promise<void> {
+  await api("/api/student/change-password", {
+    method: "POST",
+    headers: studentAuthHeaders(),
+    body: JSON.stringify({ newPassword }),
+  });
+}
+
+export async function getStudentMe(): Promise<StudentLoginResult["student"]> {
+  return await api("/api/student/me", { headers: studentAuthHeaders() });
+}
+
+export async function getStudentAssignments(): Promise<StudentAssignmentItem[]> {
+  const data = await api("/api/student/assignments", { headers: studentAuthHeaders() });
+  return Array.isArray(data) ? data : [];
+}
+
+export async function submitStudentAssignmentAnswer(
+  assignmentId: string,
+  payload: { answerText?: string; answerImageDataUrl?: string | null; answerLink?: string | null }
+): Promise<void> {
+  await api(`/api/student/assignments/${assignmentId}/answer`, {
+    method: "POST",
+    headers: studentAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getStudentCoinHistory(): Promise<CoinHistoryByMonth> {
+  const data = await api("/api/student/coin-history", { headers: studentAuthHeaders() });
+  return typeof data === "object" && data ? (data as CoinHistoryByMonth) : {};
+}
+
+export async function createAssignment(payload: {
+  studentId: string;
+  classId: string;
+  text?: string;
+  imageDataUrl?: string | null;
+  link?: string | null;
+}): Promise<void> {
+  await api("/api/assignments", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
   });
 }
 

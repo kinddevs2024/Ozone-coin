@@ -12,6 +12,12 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminApp from "./pages/AdminApp";
 import RulesPage from "./pages/RulesPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import StudentLogin from "./pages/StudentLogin";
+import StudentDashboardPage from "./pages/StudentDashboardPage";
+import StudentAssignmentsPage from "./pages/StudentAssignmentsPage";
+import StudentCoinsPage from "./pages/StudentCoinsPage";
+import StudentRulesPage from "./pages/StudentRulesPage";
+import StudentHistoryPage from "./pages/StudentHistoryPage";
 import { getAdminToken, setAdminToken } from "./api";
 
 export default function App() {
@@ -36,6 +42,12 @@ export default function App() {
         <Route path="/community" element={<CommunityPage isAdmin={isAdmin} />} />
         <Route path="/rules" element={<RulesPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/student" element={<StudentLogin />} />
+        <Route path="/student/dashboard" element={<StudentDashboardPage />} />
+        <Route path="/student/assignments" element={<StudentAssignmentsPage />} />
+        <Route path="/student/coins" element={<StudentCoinsPage />} />
+        <Route path="/student/rules" element={<StudentRulesPage />} />
+        <Route path="/student/history" element={<StudentHistoryPage />} />
         <Route
           path="/admin"
           element={
