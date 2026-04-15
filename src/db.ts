@@ -43,6 +43,12 @@ export interface StudentAssignmentItem {
   answerImageDataUrl: string | null;
   answerLink: string | null;
   answeredAt: string | null;
+  reviewedAt?: string | null;
+  reviewComment?: string | null;
+}
+export interface AdminAssignmentItem extends StudentAssignmentItem {
+  studentName: string;
+  className: string;
 }
 export interface CoinHistoryItem {
   amount: number;
@@ -197,6 +203,34 @@ export async function createAssignment(payload: {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify(payload),
+  });
+}
+
+export async function createAssignmentsForClass(payload: {
+  classId: string;
+  title: string;
+  text?: string;
+  imageDataUrl?: string | null;
+  link?: string | null;
+  dueAt?: string | null;
+}): Promise<void> {
+  await api("/api/assignments/class", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getAdminAssignments(): Promise<AdminAssignmentItem[]> {
+  const data = await api("/api/admin/assignments", { headers: authHeaders() });
+  return Array.isArray(data) ? data : [];
+}
+
+export async function reviewAssignment(assignmentId: string, reviewComment: string): Promise<void> {
+  await api(`/api/admin/assignments/${assignmentId}/review`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify({ reviewComment }),
   });
 }
 

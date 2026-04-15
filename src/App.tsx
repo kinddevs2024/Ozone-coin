@@ -10,6 +10,7 @@ import GuestClass from "./pages/GuestClass";
 import CommunityPage from "./pages/CommunityPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminApp from "./pages/AdminApp";
+import AdminAssignmentsPage from "./pages/AdminAssignmentsPage";
 import RulesPage from "./pages/RulesPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import StudentLogin from "./pages/StudentLogin";
@@ -60,6 +61,7 @@ export default function App() {
             )
           }
         />
+        <Route path="/admin/assignments" element={isAdmin ? <AdminAssignmentsPage /> : <Navigate to="/admin" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
