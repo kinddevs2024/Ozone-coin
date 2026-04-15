@@ -10,6 +10,8 @@ import GuestClass from "./pages/GuestClass";
 import CommunityPage from "./pages/CommunityPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminApp from "./pages/AdminApp";
+import RulesPage from "./pages/RulesPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import { getAdminToken, setAdminToken } from "./api";
 
 export default function App() {
@@ -32,6 +34,8 @@ export default function App() {
         <Route path="/" element={<GuestHome />} />
         <Route path="/class/:classId" element={<GuestClass />} />
         <Route path="/community" element={<CommunityPage isAdmin={isAdmin} />} />
+        <Route path="/rules" element={<RulesPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
         <Route
           path="/admin"
           element={

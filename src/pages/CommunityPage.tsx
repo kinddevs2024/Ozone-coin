@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { Coins, ImagePlus, MessageSquare, PencilLine, Users, ArrowLeft, LoaderCircle } from "lucide-react";
+import { Coins, ImagePlus, MessageSquare, PencilLine, Users, ArrowLeft, LoaderCircle, Trash2, Edit3, X, Check, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
-import { addCommunityPost, getCommunityPosts, type CommunityPostItem } from "../db";
+import { addCommunityPost, getCommunityPosts, deleteCommunityPost, editCommunityPost, type CommunityPostItem } from "../db";
 
 function formatPostDate(value: string): string {
   const date = new Date(value);
@@ -91,6 +91,9 @@ export default function CommunityPage({ isAdmin }: { isAdmin: boolean }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [editingPost, setEditingPost] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [deletingPost, setDeletingPost] = useState<string | null>(null);
 
   const fetchPosts = async () => {
     try {
@@ -168,6 +171,48 @@ export default function CommunityPage({ isAdmin }: { isAdmin: boolean }) {
     fetchPosts();
   };
 
+  const handleDeletePost = async (id: string) => {
+    if (!window.confirm("Postni o'chirishni xohlaysizmi?")) return;
+    setDeletingPost(id);
+    try {
+      await deleteCommunityPost(id);
+      setPosts((prev) => prev.filter((p) => p.id !== id));
+    } catch {
+      setError("Postni o'chirib bo'lmadi.");
+    } finally {
+      setDeletingPost(null);
+    }
+  };
+
+  const startEditing = (post: CommunityPostItem) => {
+    setEditingPost(post.id);
+    setEditText(post.text);
+  };
+
+  const cancelEditing = () => {
+    setEditingPost(null);
+    setEditText("");
+  };
+
+  const handleEditPost = async (post: CommunityPostItem) => {
+    const trimmed = editText.trim();
+    if (!trimmed && !post.imageDataUrl) {
+      setError("Matn yozing yoki rasm bo'lishi kerak.");
+      return;
+    }
+    try {
+      const updated = await editCommunityPost(post.id, {
+        text: trimmed,
+        keepImage: !!post.imageDataUrl,
+      });
+      setPosts((prev) => prev.map((p) => (p.id === post.id ? updated : p)));
+      setEditingPost(null);
+      setEditText("");
+    } catch {
+      setError("Postni tahrirlashda xatolik.");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center">
@@ -196,10 +241,20 @@ export default function CommunityPage({ isAdmin }: { isAdmin: boolean }) {
               <p className="flex flex-wrap font-mono text-xs font-bold uppercase">Community</p>
             </div>
           </button>
-          <Link to="/" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:gap-2">
-            <ArrowLeft size={18} />
-            <span className="hidden sm:inline">Bosh sahifa</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/rules"
+              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
+              title="Qoidalar"
+              aria-label="Qoidalar sahifasini ochish"
+            >
+              <BookOpen size={18} />
+            </Link>
+            <Link to="/" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:gap-2">
+              <ArrowLeft size={18} />
+              <span className="hidden sm:inline">Bosh sahifa</span>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -286,14 +341,66 @@ export default function CommunityPage({ isAdmin }: { isAdmin: boolean }) {
                     <MessageSquare size={20} />
                     Admin post
                   </div>
-                  <div className="font-mono text-xs font-bold uppercase text-right">{formatPostDate(post.createdAt)}</div>
+                  <div className="flex items-center gap-3">
+                    <div className="font-mono text-xs font-bold uppercase text-right">{formatPostDate(post.createdAt)}</div>
+                    {isAdmin && (
+                      <div className="flex items-center gap-1">
+                        {editingPost === post.id ? (
+                          <>
+                            <button
+                              onClick={() => handleEditPost(post)}
+                              className="p-1.5 hover:bg-green-200 rounded transition-colors"
+                              title="Saqlash"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="p-1.5 hover:bg-red-200 rounded transition-colors"
+                              title="Bekor qilish"
+                            >
+                              <X size={16} />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => startEditing(post)}
+                              className="p-1.5 hover:bg-yellow-200 rounded transition-colors"
+                              title="Tahrirlash"
+                            >
+                              <Edit3 size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePost(post.id)}
+                              disabled={deletingPost === post.id}
+                              className="p-1.5 hover:bg-red-200 rounded transition-colors disabled:opacity-50"
+                              title="O'chirish"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {post.imageDataUrl ? (
                   <img src={post.imageDataUrl} alt="Community post" className="block max-h-[420px] w-full object-cover" />
                 ) : null}
 
-                {post.text ? <div className="p-5 whitespace-pre-wrap break-words text-base leading-relaxed">{renderPostText(post.text)}</div> : null}
+                {editingPost === post.id ? (
+                  <div className="p-5">
+                    <textarea
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className="w-full min-h-24 brutal-border bg-white px-4 py-3 font-medium resize-y focus:outline-none"
+                    />
+                  </div>
+                ) : post.text ? (
+                  <div className="p-5 whitespace-pre-wrap break-words text-base leading-relaxed">{renderPostText(post.text)}</div>
+                ) : null}
               </article>
             ))
           )}

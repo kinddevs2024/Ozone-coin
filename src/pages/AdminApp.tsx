@@ -13,6 +13,9 @@ import {
   LogOut,
   Settings,
   MessageSquareMore,
+  RotateCcw,
+  BarChart3,
+  BookOpen,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { clearAdminToken } from "../api";
@@ -24,6 +27,7 @@ import {
   addStudent,
   deleteStudent as dbDeleteStudent,
   updateCoins,
+  resetClassCoins,
   type ClassItem,
   type StudentItem,
 } from "../db";
@@ -118,6 +122,17 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
     }
   };
 
+  const handleResetCoins = async () => {
+    if (!selectedClass) return;
+    if (!window.confirm(`"${selectedClass.name}" sinfidagi barcha coinlarni qayta tiklashni xohlaysizmi? Bu amalni qaytarib bo'lmaydi!`)) return;
+    try {
+      await resetClassCoins(selectedClass.id);
+      fetchStudents(selectedClass.id);
+    } catch (err) {
+      console.error("Failed to reset coins", err);
+    }
+  };
+
   const handleLogout = () => {
     clearAdminToken();
     onLogout();
@@ -162,6 +177,22 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
             <span className="hidden md:flex items-center gap-1 font-mono text-sm font-bold uppercase">
               <Settings size={16} /> Admin panel
             </span>
+            <Link
+              to="/rules"
+              className="brutal-btn flex h-12 w-12 shrink-0 items-center justify-center bg-white p-0"
+              title="Qoidalar"
+              aria-label="Qoidalar sahifasini ochish"
+            >
+              <BookOpen size={18} />
+            </Link>
+            <Link
+              to="/analytics"
+              className="brutal-btn flex h-12 w-12 shrink-0 items-center justify-center bg-white p-0 sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-2"
+              title="Analitika"
+              aria-label="Analitika sahifasini ochish"
+            >
+              <BarChart3 size={18} /> <span className="hidden sm:inline">Analitika</span>
+            </Link>
             <Link
               to="/community"
               className="brutal-btn flex h-12 w-12 shrink-0 items-center justify-center bg-white p-0 sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-2"
@@ -276,8 +307,16 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                 <h2 className="font-display text-5xl uppercase mb-2 flex items-center gap-3">
                   <Users size={40} /> {selectedClass.name}
                 </h2>
-                <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase">
-                  <Users size={16} /> {students.length} o'quvchi
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase">
+                    <Users size={16} /> {students.length} o'quvchi
+                  </div>
+                  <button
+                    onClick={handleResetCoins}
+                    className="brutal-btn bg-red-500 text-white flex items-center gap-2 px-4 py-2 text-sm hover:bg-red-600"
+                  >
+                    <RotateCcw size={16} /> Coinlarni qayta tiklash
+                  </button>
                 </div>
               </div>
 

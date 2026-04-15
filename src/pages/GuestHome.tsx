@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Coins, Users, ChevronRight, TrendingUp, BookOpen, Search, X, MessageSquareMore } from "lucide-react";
+import { Coins, Users, ChevronRight, TrendingUp, BookOpen, Search, X, MessageSquareMore, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getClasses, type ClassItem } from "../db";
 
@@ -70,6 +70,22 @@ export default function GuestHome() {
               <BookOpen size={18} />
               O&apos;quvchilarni rag&apos;batlantirish tizimi
             </span>
+            <Link
+              to="/rules"
+              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
+              title="Qoidalar"
+              aria-label="Qoidalar sahifasini ochish"
+            >
+              <BookOpen size={18} />
+            </Link>
+            <Link
+              to="/analytics"
+              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
+              title="Analitika"
+              aria-label="Analitika sahifasini ochish"
+            >
+              <BarChart3 size={18} />
+            </Link>
             <Link
               to="/community"
               className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0 sm:h-auto sm:w-auto sm:px-4 sm:py-2 sm:gap-2"

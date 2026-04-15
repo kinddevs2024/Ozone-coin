@@ -23,6 +23,15 @@ export interface CommunityPostItem {
   author: "admin";
 }
 
+export interface AnalyticsItem {
+  id: string;
+  classId: string;
+  className: string;
+  resetAt: string;
+  type: "manual" | "auto";
+  studentsBefore: { name: string; coins: number }[];
+}
+
 const base = () => getApiBase();
 
 const api = async (path: string, opts?: RequestInit) => {
@@ -115,4 +124,46 @@ export async function addCommunityPost(payload: {
     createdAt: data.createdAt,
     author: "admin",
   };
+}
+
+export async function deleteCommunityPost(id: string): Promise<void> {
+  await api(`/api/community-posts/${id}`, { method: "DELETE", headers: authHeaders() });
+}
+
+export async function editCommunityPost(
+  id: string,
+  payload: { text: string; imageDataUrl?: string | null; keepImage?: boolean }
+): Promise<CommunityPostItem> {
+  const data = await api(`/api/community-posts/${id}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      text: payload.text.trim(),
+      imageDataUrl: payload.imageDataUrl ?? null,
+      keepImage: payload.keepImage ?? false,
+    }),
+  });
+  return {
+    id: data.id,
+    text: data.text ?? "",
+    imageDataUrl: data.imageDataUrl ?? null,
+    createdAt: data.createdAt,
+    author: "admin",
+  };
+}
+
+export async function resetClassCoins(classId: string): Promise<AnalyticsItem> {
+  return await api(`/api/classes/${classId}/reset-coins`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+}
+
+export async function getAnalytics(): Promise<AnalyticsItem[]> {
+  try {
+    const data = await api("/api/analytics");
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
 }
