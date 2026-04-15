@@ -1,21 +1,26 @@
 import React from "react";
 import { Coins, ClipboardList, History, Home, Scale, LogOut } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
 import { clearStudentToken } from "../api";
+const MotionLink = motion(Link);
 
 function NavLink({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) {
   const location = useLocation();
   const active = location.pathname === to;
   return (
-    <Link
+    <MotionLink
       to={to}
+      whileHover={{ y: -2, scale: 1.02 }}
+      whileTap={{ scale: 0.96 }}
+      transition={{ duration: 0.14 }}
       className={`brutal-border px-3 py-2 font-mono text-xs uppercase font-bold inline-flex items-center gap-2 ${
         active ? "bg-black text-white" : "bg-white text-black"
       }`}
     >
       {icon}
       <span>{label}</span>
-    </Link>
+    </MotionLink>
   );
 }
 
@@ -34,17 +39,20 @@ export default function StudentLayout({ title, children }: { title: string; chil
               <p className="font-mono text-xs font-bold uppercase">{title}</p>
             </div>
           </div>
-          <button
+          <motion.button
             onClick={() => {
               clearStudentToken();
               navigate("/student");
             }}
+            whileHover={{ y: -2, scale: 1.02 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ duration: 0.14 }}
             className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
             title="Logout"
             aria-label="Logout"
           >
             <LogOut size={18} />
-          </button>
+          </motion.button>
         </div>
       </header>
 
