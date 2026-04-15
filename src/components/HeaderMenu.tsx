@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { Link } from "react-router-dom";
+const MotionLink = motion(Link);
 
 export interface HeaderMenuItem {
   label: string;
@@ -39,15 +40,31 @@ export default function HeaderMenu({ items, maxVisible = 2 }: Props) {
   function IconButton({ item, className }: { item: HeaderMenuItem; className: string }) {
     if (item.to) {
       return (
-        <Link to={item.to} className={className} title={item.label} aria-label={item.label}>
+        <MotionLink
+          to={item.to}
+          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.03 }}
+          transition={{ duration: 0.12 }}
+          className={className}
+          title={item.label}
+          aria-label={item.label}
+        >
           {item.icon}
-        </Link>
+        </MotionLink>
       );
     }
     return (
-      <button onClick={item.onClick} className={className} title={item.label} aria-label={item.label}>
+      <motion.button
+        onClick={item.onClick}
+        whileTap={{ scale: 0.92 }}
+        whileHover={{ scale: 1.03 }}
+        transition={{ duration: 0.12 }}
+        className={className}
+        title={item.label}
+        aria-label={item.label}
+      >
         {item.icon}
-      </button>
+      </motion.button>
     );
   }
 
@@ -55,17 +72,26 @@ export default function HeaderMenu({ items, maxVisible = 2 }: Props) {
     const cls = "flex items-center gap-3 w-full px-5 py-3 font-bold hover:bg-yellow-50 transition-colors text-left";
     if (item.to) {
       return (
-        <Link to={item.to} className={cls} onClick={() => setOpen(false)}>
+        <MotionLink
+          to={item.to}
+          className={cls}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setOpen(false)}
+        >
           {item.icon}
           <span>{item.label}</span>
-        </Link>
+        </MotionLink>
       );
     }
     return (
-      <button onClick={() => { item.onClick?.(); setOpen(false); }} className={cls}>
+      <motion.button
+        whileTap={{ scale: 0.98 }}
+        onClick={() => { item.onClick?.(); setOpen(false); }}
+        className={cls}
+      >
         {item.icon}
         <span>{item.label}</span>
-      </button>
+      </motion.button>
     );
   }
 

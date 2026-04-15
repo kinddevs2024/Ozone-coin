@@ -33,10 +33,12 @@ export interface StudentAssignmentItem {
   id: string;
   studentId: string;
   classId: string;
+  title: string;
   text: string;
   imageDataUrl: string | null;
   link: string | null;
   createdAt: string;
+  dueAt: string | null;
   answerText: string | null;
   answerImageDataUrl: string | null;
   answerLink: string | null;
@@ -185,9 +187,11 @@ export async function getStudentCoinHistory(): Promise<CoinHistoryByMonth> {
 export async function createAssignment(payload: {
   studentId: string;
   classId: string;
+  title: string;
   text?: string;
   imageDataUrl?: string | null;
   link?: string | null;
+  dueAt?: string | null;
 }): Promise<void> {
   await api("/api/assignments", {
     method: "POST",

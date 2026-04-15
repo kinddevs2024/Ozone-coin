@@ -17,6 +17,7 @@ import {
   BarChart3,
   BookOpen,
   ClipboardPlus,
+  ImagePlus,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { clearAdminToken } from "../api";
@@ -43,10 +44,21 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
   const [newStudentName, setNewStudentName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [assignmentModalStudent, setAssignmentModalStudent] = useState<StudentItem | null>(null);
+  const [assignmentTitle, setAssignmentTitle] = useState("");
   const [assignmentText, setAssignmentText] = useState("");
   const [assignmentLink, setAssignmentLink] = useState("");
-  const [assignmentImageUrl, setAssignmentImageUrl] = useState("");
+  const [assignmentImageDataUrl, setAssignmentImageDataUrl] = useState("");
+  const [assignmentImageName, setAssignmentImageName] = useState("");
+  const [assignmentDueDate, setAssignmentDueDate] = useState("");
   const [isSendingAssignment, setIsSendingAssignment] = useState(false);
+
+  const fileToDataUrl = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Image read failed"));
+      reader.readAsDataURL(file);
+    });
 
   useEffect(() => {
     fetchClasses();
@@ -137,9 +149,12 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
 
   const openAssignmentModal = (student: StudentItem) => {
     setAssignmentModalStudent(student);
+    setAssignmentTitle("");
     setAssignmentText("");
     setAssignmentLink("");
-    setAssignmentImageUrl("");
+    setAssignmentImageDataUrl("");
+    setAssignmentImageName("");
+    setAssignmentDueDate("");
   };
 
   const closeAssignmentModal = () => {
@@ -151,8 +166,12 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
     e.preventDefault();
     if (!selectedClass) return;
     if (!assignmentModalStudent) return;
-    if (!assignmentText.trim() && !assignmentLink.trim() && !assignmentImageUrl.trim()) {
-      window.alert("Please fill text, link or image URL.");
+    if (!assignmentTitle.trim()) {
+      window.alert("Please enter homework title.");
+      return;
+    }
+    if (!assignmentText.trim() && !assignmentLink.trim() && !assignmentImageDataUrl.trim()) {
+      window.alert("Please fill homework description, link or image.");
       return;
     }
     try {
@@ -160,9 +179,11 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
       await createAssignment({
         studentId: assignmentModalStudent.id,
         classId: selectedClass.id,
+        title: assignmentTitle.trim(),
         text: assignmentText.trim(),
         link: assignmentLink.trim() || null,
-        imageDataUrl: assignmentImageUrl.trim() || null,
+        imageDataUrl: assignmentImageDataUrl.trim() || null,
+        dueAt: assignmentDueDate || null,
       });
       window.alert("Assignment sent to student.");
       setAssignmentModalStudent(null);
@@ -449,16 +470,28 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
       {assignmentModalStudent && (
         <div className="fixed inset-0 z-[120] bg-black/50 p-4 flex items-center justify-center">
           <div className="w-full max-w-lg brutal-border bg-white p-6">
-            <h3 className="font-display text-2xl uppercase mb-2">New assignment</h3>
+            <h3 className="font-display text-2xl uppercase mb-2">New homework</h3>
             <p className="font-mono text-sm mb-4">
               Student: <span className="font-bold">{assignmentModalStudent.name}</span>
             </p>
             <form className="space-y-3" onSubmit={handleCreateAssignment}>
+              <input
+                value={assignmentTitle}
+                onChange={(e) => setAssignmentTitle(e.target.value)}
+                placeholder="Homework title"
+                className="w-full brutal-border bg-white px-4 py-3 font-medium focus:outline-none"
+              />
               <textarea
                 value={assignmentText}
                 onChange={(e) => setAssignmentText(e.target.value)}
-                placeholder="Assignment text"
+                placeholder="Homework description"
                 className="w-full min-h-28 brutal-border bg-white px-4 py-3 font-medium resize-y focus:outline-none"
+              />
+              <input
+                type="date"
+                value={assignmentDueDate}
+                onChange={(e) => setAssignmentDueDate(e.target.value)}
+                className="w-full brutal-border bg-white px-4 py-3 font-medium focus:outline-none"
               />
               <input
                 value={assignmentLink}
@@ -466,12 +499,54 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                 placeholder="Link (optional)"
                 className="w-full brutal-border bg-white px-4 py-3 font-medium focus:outline-none"
               />
-              <input
-                value={assignmentImageUrl}
-                onChange={(e) => setAssignmentImageUrl(e.target.value)}
-                placeholder="Image URL (optional)"
-                className="w-full brutal-border bg-white px-4 py-3 font-medium focus:outline-none"
-              />
+              <div className="flex flex-col gap-2">
+                <label className="brutal-btn-yellow inline-flex h-[52px] cursor-pointer items-center justify-center gap-2 px-4 py-2">
+                  <ImagePlus size={18} />
+                  <span>Upload image</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (!file.type.startsWith("image/")) {
+                        window.alert("Only image files are allowed.");
+                        return;
+                      }
+                      if (file.size > 5 * 1024 * 1024) {
+                        window.alert("Image should be <= 5MB.");
+                        return;
+                      }
+                      try {
+                        const dataUrl = await fileToDataUrl(file);
+                        setAssignmentImageDataUrl(dataUrl);
+                        setAssignmentImageName(file.name);
+                      } catch {
+                        window.alert("Could not read image file.");
+                      }
+                    }}
+                  />
+                </label>
+                {assignmentImageName ? (
+                  <p className="font-mono text-xs">
+                    {assignmentImageName}
+                    <button
+                      type="button"
+                      className="ml-2 underline"
+                      onClick={() => {
+                        setAssignmentImageDataUrl("");
+                        setAssignmentImageName("");
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </p>
+                ) : null}
+                {assignmentImageDataUrl ? (
+                  <img src={assignmentImageDataUrl} alt="Assignment preview" className="max-h-56 w-full object-cover brutal-border" />
+                ) : null}
+              </div>
               <div className="flex gap-2 justify-end pt-2">
                 <button
                   type="button"
