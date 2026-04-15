@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Coins, Users, ChevronRight, TrendingUp, BookOpen, Search, X, MessageSquareMore, BarChart3 } from "lucide-react";
+import { Coins, Users, ChevronRight, TrendingUp, BookOpen, Search, X, MessageSquareMore, BarChart3, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getClasses, type ClassItem } from "../db";
 import HeaderMenu from "../components/HeaderMenu";
@@ -70,6 +70,7 @@ export default function GuestHome() {
             { label: "Qoidalar", icon: <BookOpen size={18} />, to: "/rules" },
             { label: "Analitika", icon: <BarChart3 size={18} />, to: "/analytics" },
             { label: "Community", icon: <MessageSquareMore size={18} />, to: "/community" },
+            { label: "Login", icon: <LogIn size={18} />, to: "/student" },
           ]} />
         </div>
       </header>

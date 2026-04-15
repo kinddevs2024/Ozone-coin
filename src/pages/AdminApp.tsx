@@ -42,6 +42,11 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
   const [newClassName, setNewClassName] = useState("");
   const [newStudentName, setNewStudentName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [assignmentModalStudent, setAssignmentModalStudent] = useState<StudentItem | null>(null);
+  const [assignmentText, setAssignmentText] = useState("");
+  const [assignmentLink, setAssignmentLink] = useState("");
+  const [assignmentImageUrl, setAssignmentImageUrl] = useState("");
+  const [isSendingAssignment, setIsSendingAssignment] = useState(false);
 
   useEffect(() => {
     fetchClasses();
@@ -130,24 +135,42 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
     }
   };
 
-  const handleCreateAssignment = async (student: StudentItem) => {
+  const openAssignmentModal = (student: StudentItem) => {
+    setAssignmentModalStudent(student);
+    setAssignmentText("");
+    setAssignmentLink("");
+    setAssignmentImageUrl("");
+  };
+
+  const closeAssignmentModal = () => {
+    if (isSendingAssignment) return;
+    setAssignmentModalStudent(null);
+  };
+
+  const handleCreateAssignment = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!selectedClass) return;
-    const text = window.prompt(`Task text for ${student.name}:`, "");
-    if (text === null) return;
-    const link = window.prompt("Task link (optional):", "");
-    const imageDataUrl = window.prompt("Task image URL (optional):", "");
+    if (!assignmentModalStudent) return;
+    if (!assignmentText.trim() && !assignmentLink.trim() && !assignmentImageUrl.trim()) {
+      window.alert("Please fill text, link or image URL.");
+      return;
+    }
     try {
+      setIsSendingAssignment(true);
       await createAssignment({
-        studentId: student.id,
+        studentId: assignmentModalStudent.id,
         classId: selectedClass.id,
-        text: text.trim(),
-        link: link?.trim() || null,
-        imageDataUrl: imageDataUrl?.trim() || null,
+        text: assignmentText.trim(),
+        link: assignmentLink.trim() || null,
+        imageDataUrl: assignmentImageUrl.trim() || null,
       });
       window.alert("Assignment sent to student.");
+      setAssignmentModalStudent(null);
     } catch (err) {
       console.error("Failed to create assignment", err);
       window.alert("Could not create assignment.");
+    } finally {
+      setIsSendingAssignment(false);
     }
   };
 
@@ -401,7 +424,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                         </button>
                       </div>
                       <button
-                        onClick={() => handleCreateAssignment(student)}
+                        onClick={() => openAssignmentModal(student)}
                         className="p-2 text-gray-500 hover:text-black transition-colors"
                         aria-label="Yangi topshiriq berish"
                         title="Topshiriq berish"
@@ -423,6 +446,52 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
           )}
         </AnimatePresence>
       </main>
+      {assignmentModalStudent && (
+        <div className="fixed inset-0 z-[120] bg-black/50 p-4 flex items-center justify-center">
+          <div className="w-full max-w-lg brutal-border bg-white p-6">
+            <h3 className="font-display text-2xl uppercase mb-2">New assignment</h3>
+            <p className="font-mono text-sm mb-4">
+              Student: <span className="font-bold">{assignmentModalStudent.name}</span>
+            </p>
+            <form className="space-y-3" onSubmit={handleCreateAssignment}>
+              <textarea
+                value={assignmentText}
+                onChange={(e) => setAssignmentText(e.target.value)}
+                placeholder="Assignment text"
+                className="w-full min-h-28 brutal-border bg-white px-4 py-3 font-medium resize-y focus:outline-none"
+              />
+              <input
+                value={assignmentLink}
+                onChange={(e) => setAssignmentLink(e.target.value)}
+                placeholder="Link (optional)"
+                className="w-full brutal-border bg-white px-4 py-3 font-medium focus:outline-none"
+              />
+              <input
+                value={assignmentImageUrl}
+                onChange={(e) => setAssignmentImageUrl(e.target.value)}
+                placeholder="Image URL (optional)"
+                className="w-full brutal-border bg-white px-4 py-3 font-medium focus:outline-none"
+              />
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={closeAssignmentModal}
+                  className="brutal-btn bg-gray-200 text-black px-4 py-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSendingAssignment}
+                  className="brutal-btn bg-black text-white px-4 py-2 disabled:opacity-60"
+                >
+                  {isSendingAssignment ? "Sending..." : "Send"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
