@@ -67,13 +67,6 @@ export default function StudentDashboardPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="brutal-border bg-white p-6">
           <div className="font-display text-2xl uppercase mb-2 inline-flex items-center gap-2">
-            <UserRound size={22} /> Profile
-          </div>
-          <p className="font-mono text-sm">Name: {student?.name ?? "-"}</p>
-          <p className="font-mono text-sm">Email: {student?.email ?? "-"}</p>
-        </div>
-        <div className="brutal-border bg-white p-6">
-          <div className="font-display text-2xl uppercase mb-2 inline-flex items-center gap-2">
             <Coins size={22} /> Coins
           </div>
           <motion.p
@@ -88,6 +81,13 @@ export default function StudentDashboardPage() {
           <Link to="/student/coins" className="inline-flex mt-3 font-mono text-sm underline items-center gap-1">
             Open coins page <ArrowRight size={14} />
           </Link>
+        </div>
+        <div className="brutal-border bg-white p-6">
+          <div className="font-display text-2xl uppercase mb-2 inline-flex items-center gap-2">
+            <UserRound size={22} /> Profile
+          </div>
+          <p className="font-mono text-sm">Name: {student?.name ?? "-"}</p>
+          <p className="font-mono text-sm">Email: {student?.email ?? "-"}</p>
         </div>
       </div>
 

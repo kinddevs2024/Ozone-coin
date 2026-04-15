@@ -200,6 +200,14 @@ export async function createAssignment(payload: {
   });
 }
 
+export async function updateStudentProfile(payload: { name?: string; newPassword?: string }): Promise<void> {
+  await api("/api/student/profile", {
+    method: "PATCH",
+    headers: studentAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function getCommunityPosts(): Promise<CommunityPostItem[]> {
   try {
     const data = await api("/api/community-posts");

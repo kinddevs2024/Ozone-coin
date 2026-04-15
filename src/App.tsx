@@ -18,6 +18,7 @@ import StudentAssignmentsPage from "./pages/StudentAssignmentsPage";
 import StudentCoinsPage from "./pages/StudentCoinsPage";
 import StudentRulesPage from "./pages/StudentRulesPage";
 import StudentHistoryPage from "./pages/StudentHistoryPage";
+import StudentSettingsPage from "./pages/StudentSettingsPage";
 import { getAdminToken, setAdminToken } from "./api";
 
 export default function App() {
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/student/coins" element={<StudentCoinsPage />} />
         <Route path="/student/rules" element={<StudentRulesPage />} />
         <Route path="/student/history" element={<StudentHistoryPage />} />
+        <Route path="/student/settings" element={<StudentSettingsPage />} />
         <Route
           path="/admin"
           element={

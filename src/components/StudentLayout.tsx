@@ -1,5 +1,5 @@
 import React from "react";
-import { Coins, ClipboardList, History, Home, Scale, LogOut } from "lucide-react";
+import { Coins, ClipboardList, History, Home, Scale, LogOut, Settings } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { clearStudentToken } from "../api";
@@ -14,8 +14,10 @@ function NavLink({ to, label, icon }: { to: string; label: string; icon: React.R
       whileHover={{ y: -2, scale: 1.02 }}
       whileTap={{ scale: 0.96 }}
       transition={{ duration: 0.14 }}
-      className={`brutal-border px-3 py-2 font-mono text-xs uppercase font-bold inline-flex items-center gap-2 ${
-        active ? "bg-black text-white" : "bg-white text-black"
+      className={`rounded-full border-2 border-black px-4 py-2 font-mono text-xs uppercase font-bold inline-flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+        active
+          ? "bg-black text-white"
+          : "bg-white text-black hover:bg-gray-100"
       }`}
     >
       {icon}
@@ -63,6 +65,7 @@ export default function StudentLayout({ title, children }: { title: string; chil
           <NavLink to="/student/coins" label="Coins" icon={<Coins size={14} />} />
           <NavLink to="/student/history" label="History" icon={<History size={14} />} />
           <NavLink to="/student/rules" label="Rules" icon={<Scale size={14} />} />
+          <NavLink to="/student/settings" label="Settings" icon={<Settings size={14} />} />
         </div>
         {children}
       </main>
