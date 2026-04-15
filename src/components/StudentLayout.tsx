@@ -59,7 +59,7 @@ export default function StudentLayout({ title, children }: { title: string; chil
       </header>
 
       <main className="max-w-4xl mx-auto p-6 space-y-6">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 md:flex-wrap md:overflow-visible">
           <NavLink to="/student/dashboard" label="Dashboard" icon={<Home size={14} />} />
           <NavLink to="/student/assignments" label="Assignments" icon={<ClipboardList size={14} />} />
           <NavLink to="/student/coins" label="Coins" icon={<Coins size={14} />} />
