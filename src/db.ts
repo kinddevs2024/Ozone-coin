@@ -100,6 +100,12 @@ export interface CoinStatsResponse {
   classes: CoinStatsClassGroup[];
 }
 
+export interface AnalyticsOverview {
+  classesCount: number;
+  studentsCount: number;
+  activeCoins: number;
+}
+
 const base = () => getApiBase();
 
 const api = async (path: string, opts?: RequestInit) => {
@@ -349,6 +355,15 @@ export async function getAnalytics(): Promise<AnalyticsItem[]> {
   } catch {
     return [];
   }
+}
+
+export async function getAnalyticsOverview(): Promise<AnalyticsOverview> {
+  const data = await api("/api/analytics/overview");
+  return {
+    classesCount: Number(data?.classesCount ?? 0),
+    studentsCount: Number(data?.studentsCount ?? 0),
+    activeCoins: Number(data?.activeCoins ?? 0),
+  };
 }
 
 export async function getCoinStats(params?: {

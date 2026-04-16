@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Coins, ArrowLeft, BarChart3, RotateCcw, Users, ChevronDown, ChevronUp, BookOpen, CalendarRange } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getAnalytics, getCoinStats, type AnalyticsItem, type CoinStatsResponse, type CoinStatsStudentRow } from "../db";
+import { getAnalytics, getAnalyticsOverview, getCoinStats, type AnalyticsItem, type AnalyticsOverview, type CoinStatsResponse, type CoinStatsStudentRow } from "../db";
 
 function formatResetDate(value: string): string {
   const date = new Date(value);
@@ -95,6 +95,7 @@ function StatsTable({
 
 export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<AnalyticsItem[]>([]);
+  const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
   const [stats, setStats] = useState<CoinStatsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStatsLoading, setIsStatsLoading] = useState(true);
@@ -105,10 +106,12 @@ export default function AnalyticsPage() {
 
   const fetchAnalytics = async () => {
     try {
-      const data = await getAnalytics();
-      setAnalytics(data);
+      const [analyticsData, overviewData] = await Promise.all([getAnalytics(), getAnalyticsOverview()]);
+      setAnalytics(analyticsData);
+      setOverview(overviewData);
     } catch {
       setAnalytics([]);
+      setOverview(null);
     } finally {
       setIsLoading(false);
     }
@@ -204,6 +207,24 @@ export default function AnalyticsPage() {
             Barcha o'quvchilar bo'yicha coinlar kunlik, oylik yoki siz tanlagan davr kesimida ko'rsatiladi.
           </p>
         </section>
+
+        {overview ? (
+          <section className="grid gap-4 md:grid-cols-3">
+            <div className="brutal-border bg-white p-6">
+              <p className="font-mono text-xs uppercase text-gray-500">Jami sinflar</p>
+              <div className="mt-2 font-display text-5xl">{overview.classesCount}</div>
+            </div>
+            <div className="brutal-border bg-white p-6">
+              <p className="font-mono text-xs uppercase text-gray-500">Jami o'quvchilar</p>
+              <div className="mt-2 font-display text-5xl">{overview.studentsCount}</div>
+            </div>
+            <div className="brutal-border bg-white p-6">
+              <p className="font-mono text-xs uppercase text-gray-500">Hozirgi coinlar</p>
+              <div className="mt-2 font-display text-5xl text-[#B8860B]">{overview.activeCoins}</div>
+              <p className="mt-2 font-mono text-xs text-gray-500">Faqat hozir tizimda qolgan coinlar, reset bo'lganlari kirmaydi.</p>
+            </div>
+          </section>
+        ) : null}
 
         <section className="brutal-border bg-white p-6 space-y-4">
           <div className="flex items-center gap-3">

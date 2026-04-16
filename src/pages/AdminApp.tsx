@@ -343,7 +343,6 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                         </div>
                         <div>
                           <h3 className="font-display text-2xl uppercase">{cls.name}</h3>
-                          <p className="text-sm font-mono text-gray-500 uppercase">O'quvchilarni boshqarish</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
