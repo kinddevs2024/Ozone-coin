@@ -1,6 +1,5 @@
 import React from "react";
 import { Coins, ArrowLeft, BookOpen, Trophy, MessageSquareMore, LogIn } from "lucide-react";
-import { Link } from "react-router-dom";
 import RulesContent from "../components/RulesContent";
 import HeaderMenu from "../components/HeaderMenu";
 
@@ -18,18 +17,14 @@ export default function RulesPage() {
               <p className="flex flex-wrap font-mono text-xs font-bold uppercase">Qoidalar</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <HeaderMenu
-              items={[
-                { label: "Reyting", icon: <Trophy size={18} />, to: "/ratings" },
-                { label: "Community", icon: <MessageSquareMore size={18} />, to: "/community" },
-                { label: "Login", icon: <LogIn size={18} />, to: "/student" },
-              ]}
-            />
-            <Link to="/" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Bosh sahifa" aria-label="Bosh sahifa">
-              <ArrowLeft size={18} />
-            </Link>
-          </div>
+          <HeaderMenu
+            items={[
+              { label: "Reyting", icon: <Trophy size={18} />, to: "/ratings" },
+              { label: "Community", icon: <MessageSquareMore size={18} />, to: "/community" },
+              { label: "Login", icon: <LogIn size={18} />, to: "/student" },
+              { label: "Bosh sahifa", icon: <ArrowLeft size={18} />, to: "/" },
+            ]}
+          />
         </div>
       </header>
 

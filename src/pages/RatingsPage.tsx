@@ -68,19 +68,15 @@ export default function RatingsPage() {
       <BrutalAppPageHeader
         pageLabel="Reyting"
         right={
-          <div className="flex items-center gap-2">
-            <HeaderMenu
-              items={[
-                { label: "Sinflar", icon: <Users size={18} />, to: "/" },
-                { label: "Qoidalar", icon: <BookOpen size={18} />, to: "/rules" },
-                { label: "Community", icon: <MessageSquareMore size={18} />, to: "/community" },
-                { label: "Login", icon: <LogIn size={18} />, to: "/student" },
-              ]}
-            />
-            <Link to="/" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Bosh sahifa" aria-label="Bosh sahifa">
-              <ArrowLeft size={18} />
-            </Link>
-          </div>
+          <HeaderMenu
+            items={[
+              { label: "Sinflar", icon: <Users size={18} />, to: "/" },
+              { label: "Qoidalar", icon: <BookOpen size={18} />, to: "/rules" },
+              { label: "Community", icon: <MessageSquareMore size={18} />, to: "/community" },
+              { label: "Login", icon: <LogIn size={18} />, to: "/student" },
+              { label: "Bosh sahifa", icon: <ArrowLeft size={18} />, to: "/" },
+            ]}
+          />
         }
       />
 
