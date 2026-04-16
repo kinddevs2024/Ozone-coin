@@ -163,6 +163,25 @@ export async function getClassRatingsPage(
   return await api(`/api/classes/${encodeURIComponent(classId)}/ratings?${qs}`);
 }
 
+export interface GlobalRatingsRow extends ClassRatingsRow {
+  classId: string;
+  className: string;
+}
+
+export interface GlobalRatingsPageResponse {
+  total: number;
+  page: number;
+  pageSize: number;
+  maxCoins: number;
+  hasMore: boolean;
+  items: GlobalRatingsRow[];
+}
+
+export async function getGlobalRatingsPage(page = 0, pageSize = 10): Promise<GlobalRatingsPageResponse> {
+  const qs = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+  return await api(`/api/ratings?${qs}`);
+}
+
 export async function getAdminStudents(classId: string): Promise<StudentItem[]> {
   try {
     const data = await api(`/api/admin/classes/${classId}/students`, { headers: authHeaders() });
