@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Coins, CheckCircle2, ClipboardCheck, ArrowLeft, ImagePlus, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
+import BrutalCustomSelect from "../components/BrutalCustomSelect";
+import BrutalDatePicker from "../components/BrutalDatePicker";
 import {
   getAdminAssignments,
   reviewAssignment,
@@ -15,60 +17,6 @@ import {
 
 type Filter = "all" | "pending" | "answered" | "reviewed";
 type SelectOption = { value: string; label: string };
-
-function CustomSelect({
-  placeholder,
-  value,
-  options,
-  open,
-  setOpen,
-  onSelect,
-  disabled,
-}: {
-  placeholder: string;
-  value: string;
-  options: SelectOption[];
-  open: boolean;
-  setOpen: (v: boolean) => void;
-  onSelect: (value: string) => void;
-  disabled?: boolean;
-}) {
-  const selected = options.find((o) => o.value === value);
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => !disabled && setOpen(!open)}
-        className="w-full brutal-border px-4 py-3 font-mono flex items-center justify-between bg-white disabled:opacity-60"
-      >
-        <span>{selected?.label ?? placeholder}</span>
-        <ChevronDown size={16} className={`${open ? "rotate-180" : ""} transition-transform`} />
-      </button>
-      {open && !disabled && (
-        <div className="absolute left-0 right-0 mt-1 brutal-border bg-white z-30 max-h-56 overflow-auto">
-          {options.length === 0 ? (
-            <div className="px-4 py-3 font-mono text-sm text-gray-500">No options</div>
-          ) : (
-            options.map((o) => (
-              <button
-                key={o.value}
-                type="button"
-                onClick={() => {
-                  onSelect(o.value);
-                  setOpen(false);
-                }}
-                className="w-full text-left px-4 py-3 font-mono hover:bg-yellow-50 border-b last:border-b-0 border-gray-200"
-              >
-                {o.label}
-              </button>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function AdminAssignmentsPage() {
   const [items, setItems] = useState<AdminAssignmentItem[]>([]);
@@ -85,8 +33,6 @@ export default function AdminAssignmentsPage() {
   const [imageName, setImageName] = useState("");
   const [sending, setSending] = useState(false);
   const [isComposerOpen, setIsComposerOpen] = useState(true);
-  const [classSelectOpen, setClassSelectOpen] = useState(false);
-  const [studentSelectOpen, setStudentSelectOpen] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(true);
   const [reviewText, setReviewText] = useState<Record<string, string>>({});
@@ -227,7 +173,6 @@ export default function AdminAssignmentsPage() {
                   type="button"
                   onClick={() => {
                     setTargetType("student");
-                    setStudentSelectOpen(false);
                   }}
                   className={`rounded-full border-2 border-black px-4 py-2 font-mono text-xs uppercase font-bold ${
                     targetType === "student" ? "bg-black text-white" : "bg-white text-black"
@@ -239,7 +184,6 @@ export default function AdminAssignmentsPage() {
                   type="button"
                   onClick={() => {
                     setTargetType("class");
-                    setStudentSelectOpen(false);
                   }}
                   className={`rounded-full border-2 border-black px-4 py-2 font-mono text-xs uppercase font-bold ${
                     targetType === "class" ? "bg-black text-white" : "bg-white text-black"
@@ -249,26 +193,14 @@ export default function AdminAssignmentsPage() {
                 </button>
               </div>
 
-              <CustomSelect
-                placeholder="Select class"
-                value={selectedClassId}
-                options={classOptions}
-                open={classSelectOpen}
-                setOpen={(v) => {
-                  setClassSelectOpen(v);
-                  if (v) setStudentSelectOpen(false);
-                }}
-                onSelect={(v) => setSelectedClassId(v)}
-              />
+              <BrutalCustomSelect placeholder="Select class" value={selectedClassId} options={classOptions} onChange={setSelectedClassId} />
 
               {targetType === "student" && (
-                <CustomSelect
+                <BrutalCustomSelect
                   placeholder="Select student"
                   value={selectedStudentId}
                   options={studentOptions}
-                  open={studentSelectOpen}
-                  setOpen={(v) => setStudentSelectOpen(v)}
-                  onSelect={(v) => setSelectedStudentId(v)}
+                  onChange={setSelectedStudentId}
                   disabled={!selectedClassId}
                 />
               )}
@@ -291,12 +223,8 @@ export default function AdminAssignmentsPage() {
                 placeholder="Link (optional)"
                 className="w-full brutal-border px-4 py-3 font-mono"
               />
-              <input
-                type="date"
-                value={dueAt}
-                onChange={(e) => setDueAt(e.target.value)}
-                className="w-full brutal-border px-4 py-3 font-mono"
-              />
+              <label className="block font-mono text-xs font-bold uppercase mb-1">Muddat (ixtiyoriy)</label>
+              <BrutalDatePicker value={dueAt} onChange={setDueAt} allowClear placeholder="Muddat tanlang" />
               <div className="space-y-2">
                 <label className="brutal-btn-yellow inline-flex h-[52px] cursor-pointer items-center justify-center gap-2 px-4 py-2">
                   <ImagePlus size={16} />

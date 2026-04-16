@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trash2, Plus, Coins } from "lucide-react";
+import BrutalCustomSelect from "../components/BrutalCustomSelect";
+import BrutalDatePicker from "../components/BrutalDatePicker";
 import { getClasses, getScheduleWeek, addScheduleSlot, deleteScheduleSlot, type ClassItem, type ScheduleWeekResponse } from "../db";
 
 const WEEKDAYS = [
@@ -20,6 +22,7 @@ function addDaysYmd(ymd: string, delta: number): string {
 }
 
 export default function AdminJournalSchedulePage() {
+  const navigate = useNavigate();
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [classId, setClassId] = useState("");
   const [weekStart, setWeekStart] = useState("");
@@ -105,6 +108,9 @@ export default function AdminJournalSchedulePage() {
     }
   };
 
+  const classOptions = useMemo(() => classes.map((c) => ({ value: c.id, label: c.name })), [classes]);
+  const weekdayOptions = useMemo(() => WEEKDAYS.map((x) => ({ value: String(x.v), label: x.l })), []);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center">
@@ -118,41 +124,26 @@ export default function AdminJournalSchedulePage() {
       <header className="bg-[#FFD700] border-b-4 border-black p-6 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-display text-2xl md:text-3xl uppercase">Haftalik jadval</h1>
-          <div className="flex items-center gap-2">
-            <Link to="/admin/jurnal" className="brutal-btn px-3 py-2 text-sm font-bold">
-              Orqaga
-            </Link>
-            <Link to="/admin" className="brutal-btn flex h-[44px] w-[44px] items-center justify-center p-0" aria-label="Admin">
-              <ArrowLeft size={18} />
-            </Link>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="brutal-btn flex h-[44px] w-[44px] items-center justify-center p-0"
+            aria-label="Orqaga"
+          >
+            <ArrowLeft size={18} />
+          </button>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="brutal-border bg-white p-4 flex flex-wrap gap-4 items-end">
-          <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase">
+          <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase min-w-[200px] flex-1 sm:flex-none">
             Sinf
-            <select
-              className="brutal-border bg-white px-3 py-2 font-bold min-w-[180px]"
-              value={classId}
-              onChange={(e) => setClassId(e.target.value)}
-            >
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <BrutalCustomSelect placeholder="Sinf tanlang" value={classId} options={classOptions} onChange={setClassId} />
           </label>
           <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase">
             Hafta (dushanba sana)
-            <input
-              type="date"
-              className="brutal-border bg-white px-3 py-2 font-bold"
-              value={weekStart}
-              onChange={(e) => setWeekStart(e.target.value)}
-            />
+            <BrutalDatePicker value={weekStart} onChange={setWeekStart} />
           </label>
           <div className="flex gap-2">
             <button type="button" className="brutal-btn px-3 py-2 text-sm" onClick={() => setWeekStart((w) => addDaysYmd(w || mondayThisWeek, -7))}>
@@ -223,13 +214,12 @@ export default function AdminJournalSchedulePage() {
           <form onSubmit={handleAdd} className="grid gap-4 md:grid-cols-5 items-end">
             <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase md:col-span-2">
               Kun
-              <select className="brutal-border px-3 py-2 font-bold" value={formWeekday} onChange={(e) => setFormWeekday(Number(e.target.value))}>
-                {WEEKDAYS.map((x) => (
-                  <option key={x.v} value={x.v}>
-                    {x.l}
-                  </option>
-                ))}
-              </select>
+              <BrutalCustomSelect
+                placeholder="Kun"
+                value={String(formWeekday)}
+                options={weekdayOptions}
+                onChange={(v) => setFormWeekday(Number(v))}
+              />
             </label>
             <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase">
               Boshlanish

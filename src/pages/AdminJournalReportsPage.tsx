@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Download, Coins } from "lucide-react";
+import BrutalCustomSelect from "../components/BrutalCustomSelect";
+import BrutalDatePicker from "../components/BrutalDatePicker";
 import { getClasses, getDailyReport, getRangeReport, type ClassItem, type DailyReportResponse, type RangeReportResponse } from "../db";
 
 function downloadCsv(filename: string, content: string) {
@@ -36,6 +38,7 @@ function rangeToCsv(data: RangeReportResponse): string {
 }
 
 export default function AdminJournalReportsPage() {
+  const navigate = useNavigate();
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [classId, setClassId] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -96,6 +99,8 @@ export default function AdminJournalReportsPage() {
     downloadCsv(`ozone-hisobot-${range.classId}-${range.from}-${range.to}.csv`, rangeToCsv(range));
   };
 
+  const classOptions = useMemo(() => classes.map((c) => ({ value: c.id, label: c.name })), [classes]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center">
@@ -109,28 +114,22 @@ export default function AdminJournalReportsPage() {
       <header className="bg-[#FFD700] border-b-4 border-black p-6 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-display text-2xl md:text-3xl uppercase">Hisobotlar</h1>
-          <div className="flex items-center gap-2">
-            <Link to="/admin/jurnal" className="brutal-btn px-3 py-2 text-sm font-bold">
-              Orqaga
-            </Link>
-            <Link to="/admin" className="brutal-btn flex h-[44px] w-[44px] items-center justify-center p-0" aria-label="Admin">
-              <ArrowLeft size={18} />
-            </Link>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="brutal-btn flex h-[44px] w-[44px] items-center justify-center p-0"
+            aria-label="Orqaga"
+          >
+            <ArrowLeft size={18} />
+          </button>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="brutal-border bg-white p-4 flex flex-wrap gap-4 items-end">
-          <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase">
+          <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase min-w-[200px] flex-1 sm:flex-none">
             Sinf
-            <select className="brutal-border px-3 py-2 font-bold min-w-[200px]" value={classId} onChange={(e) => setClassId(e.target.value)}>
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <BrutalCustomSelect placeholder="Sinf tanlang" value={classId} options={classOptions} onChange={setClassId} />
           </label>
           <div className="flex gap-2">
             <button type="button" className={`brutal-btn px-4 py-2 text-sm ${tab === "kun" ? "bg-[#FFD700]" : ""}`} onClick={() => setTab("kun")}>
@@ -148,7 +147,7 @@ export default function AdminJournalReportsPage() {
           <div className="space-y-4">
             <label className="inline-flex flex-col gap-1 font-mono text-xs font-bold uppercase">
               Sana
-              <input type="date" className="brutal-border px-3 py-2 font-bold" value={date} onChange={(e) => setDate(e.target.value)} />
+              <BrutalDatePicker value={date} onChange={setDate} />
             </label>
             {daily && (
               <div className="brutal-border bg-white overflow-x-auto">
@@ -187,11 +186,11 @@ export default function AdminJournalReportsPage() {
             <div className="flex flex-wrap gap-4 items-end">
               <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase">
                 Dan
-                <input type="date" className="brutal-border px-3 py-2 font-bold" value={from} onChange={(e) => setFrom(e.target.value)} />
+                <BrutalDatePicker value={from} onChange={setFrom} />
               </label>
               <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase">
                 Gacha
-                <input type="date" className="brutal-border px-3 py-2 font-bold" value={to} onChange={(e) => setTo(e.target.value)} />
+                <BrutalDatePicker value={to} onChange={setTo} />
               </label>
               <button type="button" onClick={exportRangeCsv} disabled={!range} className="brutal-btn-yellow flex items-center gap-2 px-4 py-2 font-bold disabled:opacity-50">
                 <Download size={18} /> CSV yuklash

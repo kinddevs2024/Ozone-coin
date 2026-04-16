@@ -1,9 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Coins } from "lucide-react";
-import { getClasses, getScheduleWeek, getAttendance, saveAttendance, type ClassItem, type ScheduleSlotItem } from "../db";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Coins, X } from "lucide-react";
+import BrutalCustomSelect from "../components/BrutalCustomSelect";
+import BrutalDatePicker from "../components/BrutalDatePicker";
+import {
+  getClasses,
+  getScheduleWeek,
+  getAttendance,
+  saveAttendance,
+  getDailyReport,
+  type ClassItem,
+  type ScheduleSlotItem,
+  type DailyReportResponse,
+} from "../db";
 
 export default function AdminJournalAttendancePage() {
+  const navigate = useNavigate();
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [classId, setClassId] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -14,6 +26,13 @@ export default function AdminJournalAttendancePage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [histClassId, setHistClassId] = useState("");
+  const [histDate, setHistDate] = useState("");
+  const [histReport, setHistReport] = useState<DailyReportResponse | null>(null);
+  const [histLoading, setHistLoading] = useState(false);
+  const [histError, setHistError] = useState("");
 
   useEffect(() => {
     const init = async () => {
@@ -100,6 +119,39 @@ export default function AdminJournalAttendancePage() {
     }
   };
 
+  const openHistory = () => {
+    setHistClassId(classId || classes[0]?.id || "");
+    setHistDate(date);
+    setHistReport(null);
+    setHistError("");
+    setHistoryOpen(true);
+  };
+
+  useEffect(() => {
+    if (!historyOpen || !histClassId || !histDate) return;
+    let cancelled = false;
+    setHistLoading(true);
+    setHistError("");
+    void getDailyReport(histClassId, histDate)
+      .then((d) => {
+        if (!cancelled) setHistReport(d);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setHistReport(null);
+          setHistError("Yuklab bo'lmadi.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setHistLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [historyOpen, histClassId, histDate]);
+
+  const classOptions = useMemo(() => classes.map((c) => ({ value: c.id, label: c.name })), [classes]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center">
@@ -113,33 +165,35 @@ export default function AdminJournalAttendancePage() {
       <header className="bg-[#FFD700] border-b-4 border-black p-6 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-3">
           <h1 className="font-display text-2xl md:text-3xl uppercase">Davomat</h1>
-          <div className="flex items-center gap-2">
-            <Link to="/admin/jurnal" className="brutal-btn px-3 py-2 text-sm font-bold">
-              Orqaga
-            </Link>
-            <Link to="/admin" className="brutal-btn flex h-[44px] w-[44px] items-center justify-center p-0" aria-label="Admin">
-              <ArrowLeft size={18} />
-            </Link>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="brutal-btn flex h-[44px] w-[44px] items-center justify-center p-0"
+            aria-label="Orqaga"
+          >
+            <ArrowLeft size={18} />
+          </button>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto p-6 space-y-6">
         <div className="brutal-border bg-white p-4 flex flex-wrap gap-4 items-end">
-          <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase">
+          <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase min-w-[200px] flex-1 sm:flex-none">
             Sinf
-            <select className="brutal-border bg-white px-3 py-2 font-bold min-w-[200px]" value={classId} onChange={(e) => setClassId(e.target.value)}>
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <BrutalCustomSelect
+              placeholder="Sinf tanlang"
+              value={classId}
+              options={classOptions}
+              onChange={setClassId}
+            />
           </label>
           <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase">
             Sana
-            <input type="date" className="brutal-border px-3 py-2 font-bold" value={date} onChange={(e) => setDate(e.target.value)} />
+            <BrutalDatePicker value={date} onChange={setDate} />
           </label>
+          <button type="button" onClick={openHistory} className="brutal-btn px-4 py-3 text-sm font-bold uppercase h-[48px] self-end">
+            Tarix
+          </button>
         </div>
 
         {error ? <p className="font-mono text-sm text-red-600">{error}</p> : null}
@@ -188,6 +242,73 @@ export default function AdminJournalAttendancePage() {
           </section>
         ) : null}
       </main>
+
+      {historyOpen ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="hist-title">
+          <div className="brutal-border bg-white max-w-4xl w-full max-h-[90vh] flex flex-col shadow-[8px_8px_0_0_#000]">
+            <div className="flex items-center justify-between gap-2 border-b-4 border-black px-4 py-3 bg-[#FFD700] shrink-0">
+              <h2 id="hist-title" className="font-display text-lg uppercase">
+                Davomat tarixi
+              </h2>
+              <button type="button" className="brutal-btn p-2" onClick={() => setHistoryOpen(false)} aria-label="Yopish">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
+              <p className="font-mono text-xs text-gray-600">
+                O&apos;tgan kunlar uchun barcha slotlar bo&apos;yicha keldi / kelmadi. Tahrirlash uchun yopib, yuqoridagi sana va slotni tanlang.
+              </p>
+              <div className="flex flex-wrap gap-4 items-end">
+                <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase min-w-[200px] flex-1 sm:flex-none">
+                  Sinf
+                  <BrutalCustomSelect placeholder="Sinf" value={histClassId} options={classOptions} onChange={setHistClassId} />
+                </label>
+                <label className="flex flex-col gap-1 font-mono text-xs font-bold uppercase">
+                  Sana
+                  <BrutalDatePicker value={histDate} onChange={setHistDate} />
+                </label>
+              </div>
+              {histError ? <p className="font-mono text-sm text-red-600">{histError}</p> : null}
+              {histLoading ? (
+                <div className="flex justify-center py-8">
+                  <Coins size={40} className="text-[#FFD700] animate-pulse" />
+                </div>
+              ) : null}
+              {!histLoading && histReport ? (
+                <div className="brutal-border bg-white overflow-x-auto">
+                  <table className="min-w-full font-mono text-sm">
+                    <thead className="bg-[#FFD700] border-b-2 border-black">
+                      <tr>
+                        <th className="text-left px-3 py-2 border-r border-black">O&apos;quvchi</th>
+                        <th className="text-center px-3 py-2 border-r border-black">Coin (kun)</th>
+                        {histReport.slots.map((s, idx) => (
+                          <th key={s.id ?? s.scheduleSlotId ?? idx} className="text-center px-2 py-2 border-r border-black last:border-r-0 whitespace-nowrap">
+                            {s.startTime}–{s.endTime}
+                            {s.title ? <span className="block text-xs font-normal truncate max-w-[100px]">{s.title}</span> : null}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {histReport.rows.map((row) => (
+                        <tr key={row.studentId} className="border-b border-gray-200">
+                          <td className="px-3 py-2 font-bold border-r border-gray-100">{row.studentName}</td>
+                          <td className="px-3 py-2 text-center border-r border-gray-100">{row.coinsDay}</td>
+                          {row.slots.map((cell) => (
+                            <td key={cell.scheduleSlotId} className="px-2 py-2 text-center border-r border-gray-100">
+                              {cell.present === null ? "—" : cell.present ? "✓" : "✗"}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
