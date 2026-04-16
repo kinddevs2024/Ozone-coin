@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, CalendarDays, ClipboardCheck, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, CalendarDays, ClipboardCheck, FileSpreadsheet, Trophy } from "lucide-react";
 import BrutalAppPageHeader from "../components/BrutalAppPageHeader";
 
 export default function AdminJournalHubPage() {
@@ -10,9 +10,14 @@ export default function AdminJournalHubPage() {
       <BrutalAppPageHeader
         pageLabel="Dars va davomat"
         right={
-          <Link to="/admin" className="brutal-btn flex h-[52px] w-[52px] shrink-0 items-center justify-center p-0" title="Admin bosh sahifa" aria-label="Admin bosh sahifa">
-            <ArrowLeft size={18} />
-          </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link to="/ratings" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Reyting" aria-label="Reyting">
+              <Trophy size={18} />
+            </Link>
+            <Link to="/admin" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Admin bosh sahifa" aria-label="Admin bosh sahifa">
+              <ArrowLeft size={18} />
+            </Link>
+          </div>
         }
       />
 

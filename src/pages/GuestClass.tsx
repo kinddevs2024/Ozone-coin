@@ -99,6 +99,14 @@ export default function GuestClass() {
               <BookOpen size={18} />
             </Link>
             <Link
+              to="/ratings"
+              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
+              title="Reyting"
+              aria-label="Reyting sahifasini ochish"
+            >
+              <Trophy size={18} />
+            </Link>
+            <Link
               to="/community"
               className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
               title="Community"

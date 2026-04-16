@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Coins, X } from "lucide-react";
+import { ArrowLeft, Coins, X, Trophy } from "lucide-react";
 import BrutalAppPageHeader from "../components/BrutalAppPageHeader";
 import BrutalCustomSelect from "../components/BrutalCustomSelect";
 import BrutalDatePicker from "../components/BrutalDatePicker";
@@ -170,14 +170,19 @@ export default function AdminJournalAttendancePage() {
       <BrutalAppPageHeader
         pageLabel="Davomat"
         right={
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
-            aria-label="Orqaga"
-          >
-            <ArrowLeft size={18} />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link to="/ratings" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Reyting" aria-label="Reyting">
+              <Trophy size={18} />
+            </Link>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
+              aria-label="Orqaga"
+            >
+              <ArrowLeft size={18} />
+            </button>
+          </div>
         }
       />
 

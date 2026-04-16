@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Coins, ArrowLeft, BarChart3, RotateCcw, Users, ChevronDown, ChevronUp, BookOpen, CalendarRange } from "lucide-react";
+import { Coins, ArrowLeft, BarChart3, RotateCcw, Users, ChevronDown, ChevronUp, BookOpen, CalendarRange, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getAnalytics, getAnalyticsOverview, getCoinStats, type AnalyticsItem, type AnalyticsOverview, type CoinStatsResponse, type CoinStatsStudentRow } from "../db";
 
@@ -189,6 +189,14 @@ export default function AnalyticsPage() {
               aria-label="Qoidalar sahifasini ochish"
             >
               <BookOpen size={18} />
+            </Link>
+            <Link
+              to="/ratings"
+              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
+              title="Reyting"
+              aria-label="Reyting sahifasini ochish"
+            >
+              <Trophy size={18} />
             </Link>
             <Link to="/admin" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Admin panel" aria-label="Admin panel">
               <ArrowLeft size={18} />

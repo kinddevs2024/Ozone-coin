@@ -12,6 +12,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminApp from "./pages/AdminApp";
 import AdminAssignmentsPage from "./pages/AdminAssignmentsPage";
 import RulesPage from "./pages/RulesPage";
+import RatingsPage from "./pages/RatingsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import AdminJournalHubPage from "./pages/AdminJournalHubPage";
 import AdminJournalSchedulePage from "./pages/AdminJournalSchedulePage";
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/class/:classId" element={<GuestClass />} />
         <Route path="/community" element={<CommunityPage isAdmin={isAdmin} />} />
         <Route path="/rules" element={<RulesPage />} />
+        <Route path="/ratings" element={<RatingsPage />} />
         <Route path="/analytics" element={<Navigate to="/admin" replace />} />
         <Route path="/admin/analytics" element={isAdmin ? <AnalyticsPage /> : <Navigate to="/admin" replace />} />
         <Route path="/admin/jurnal" element={isAdmin ? <AdminJournalHubPage /> : <Navigate to="/admin" replace />} />

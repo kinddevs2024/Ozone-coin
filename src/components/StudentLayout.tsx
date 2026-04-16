@@ -1,5 +1,5 @@
 import React from "react";
-import { Coins, ClipboardList, History, Home, Scale, LogOut, Settings } from "lucide-react";
+import { Coins, ClipboardList, History, Home, Scale, LogOut, Settings, Trophy } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { clearStudentToken } from "../api";
@@ -63,6 +63,7 @@ export default function StudentLayout({ title, children }: { title: string; chil
           <NavLink to="/student/dashboard" label="Dashboard" icon={<Home size={14} />} />
           <NavLink to="/student/assignments" label="Assignments" icon={<ClipboardList size={14} />} />
           <NavLink to="/student/coins" label="Coins" icon={<Coins size={14} />} />
+          <NavLink to="/ratings" label="Reyting" icon={<Trophy size={14} />} />
           <NavLink to="/student/history" label="History" icon={<History size={14} />} />
           <NavLink to="/student/rules" label="Rules" icon={<Scale size={14} />} />
           <NavLink to="/student/settings" label="Settings" icon={<Settings size={14} />} />

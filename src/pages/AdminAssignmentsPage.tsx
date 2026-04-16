@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Coins, CheckCircle2, ClipboardCheck, ArrowLeft, ImagePlus, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { Coins, CheckCircle2, ClipboardCheck, ArrowLeft, ImagePlus, Send, ChevronDown, ChevronUp, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import BrutalCustomSelect from "../components/BrutalCustomSelect";
 import BrutalDatePicker from "../components/BrutalDatePicker";
@@ -103,9 +103,14 @@ export default function AdminAssignmentsPage() {
             </div>
             <h1 className="font-display text-4xl uppercase">Assignments review</h1>
           </div>
-          <Link to="/admin" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Back">
-            <ArrowLeft size={18} />
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/ratings" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Reyting" aria-label="Reyting">
+              <Trophy size={18} />
+            </Link>
+            <Link to="/admin" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Back">
+              <ArrowLeft size={18} />
+            </Link>
+          </div>
         </div>
       </header>
 

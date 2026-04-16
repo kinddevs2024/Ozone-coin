@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { Coins, ImagePlus, MessageSquare, PencilLine, Users, ArrowLeft, LoaderCircle, Trash2, Edit3, X, Check, BookOpen } from "lucide-react";
+import { Coins, ImagePlus, MessageSquare, PencilLine, Users, ArrowLeft, LoaderCircle, Trash2, Edit3, X, Check, BookOpen, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import { addCommunityPost, getCommunityPosts, deleteCommunityPost, editCommunityPost, type CommunityPostItem } from "../db";
 import BrutalAppPageHeader from "../components/BrutalAppPageHeader";
@@ -240,6 +240,14 @@ export default function CommunityPage({ isAdmin }: { isAdmin: boolean }) {
               aria-label="Qoidalar sahifasini ochish"
             >
               <BookOpen size={18} />
+            </Link>
+            <Link
+              to="/ratings"
+              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
+              title="Reyting"
+              aria-label="Reyting sahifasini ochish"
+            >
+              <Trophy size={18} />
             </Link>
             <Link to="/" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Bosh sahifa" aria-label="Bosh sahifa">
               <ArrowLeft size={18} />
