@@ -45,6 +45,7 @@ export interface StudentAssignmentItem {
   answeredAt: string | null;
   reviewedAt?: string | null;
   reviewComment?: string | null;
+  awardedCoins?: number | null;
 }
 export interface AdminAssignmentItem extends StudentAssignmentItem {
   studentName: string;
@@ -73,6 +74,49 @@ export interface AnalyticsItem {
   resetAt: string;
   type: "manual" | "auto";
   studentsBefore: { name: string; coins: number }[];
+}
+
+export interface ImportedStudentCredential {
+  id: string;
+  name: string;
+  className: string;
+  email: string;
+  initialPassword: string;
+}
+
+export interface ImportedStudentSkip {
+  name: string;
+  className: string;
+  reason: string;
+}
+
+export interface StudentImportResult {
+  created: ImportedStudentCredential[];
+  skipped: ImportedStudentSkip[];
+}
+
+export interface CoinStatsStudentRow {
+  studentId: string;
+  studentName: string;
+  classId: string;
+  className: string;
+  total: number;
+  values: Record<string, number>;
+}
+
+export interface CoinStatsClassGroup {
+  classId: string;
+  className: string;
+  rows: CoinStatsStudentRow[];
+}
+
+export interface CoinStatsResponse {
+  mode: "day" | "month" | "custom";
+  from: string | null;
+  to: string | null;
+  columns: string[];
+  overall: CoinStatsStudentRow[];
+  classes: CoinStatsClassGroup[];
 }
 
 const base = () => getApiBase();
@@ -226,12 +270,28 @@ export async function getAdminAssignments(): Promise<AdminAssignmentItem[]> {
   return Array.isArray(data) ? data : [];
 }
 
-export async function reviewAssignment(assignmentId: string, reviewComment: string): Promise<void> {
+export async function reviewAssignment(
+  assignmentId: string,
+  reviewComment: string,
+  awardedCoins: number
+): Promise<void> {
   await api(`/api/admin/assignments/${assignmentId}/review`, {
     method: "PATCH",
     headers: authHeaders(),
-    body: JSON.stringify({ reviewComment }),
+    body: JSON.stringify({ reviewComment, awardedCoins }),
   });
+}
+
+export async function importStudents(payload: { students: { name: string; className: string }[] }): Promise<StudentImportResult> {
+  const data = await api("/api/admin/import-students", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return {
+    created: Array.isArray(data?.created) ? data.created : [],
+    skipped: Array.isArray(data?.skipped) ? data.skipped : [],
+  };
 }
 
 export async function updateStudentProfile(payload: { name?: string; newPassword?: string }): Promise<void> {
@@ -312,4 +372,25 @@ export async function getAnalytics(): Promise<AnalyticsItem[]> {
   } catch {
     return [];
   }
+}
+
+export async function getCoinStats(params?: {
+  mode?: "day" | "month" | "custom";
+  from?: string | null;
+  to?: string | null;
+}): Promise<CoinStatsResponse> {
+  const search = new URLSearchParams();
+  if (params?.mode) search.set("mode", params.mode);
+  if (params?.from) search.set("from", params.from);
+  if (params?.to) search.set("to", params.to);
+  const qs = search.toString();
+  const data = await api(`/api/coin-stats${qs ? `?${qs}` : ""}`);
+  return {
+    mode: data?.mode === "month" || data?.mode === "custom" ? data.mode : "day",
+    from: typeof data?.from === "string" ? data.from : null,
+    to: typeof data?.to === "string" ? data.to : null,
+    columns: Array.isArray(data?.columns) ? data.columns : [],
+    overall: Array.isArray(data?.overall) ? data.overall : [],
+    classes: Array.isArray(data?.classes) ? data.classes : [],
+  };
 }

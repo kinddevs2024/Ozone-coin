@@ -90,6 +90,7 @@ export default function AdminAssignmentsPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(true);
   const [reviewText, setReviewText] = useState<Record<string, string>>({});
+  const [reviewCoins, setReviewCoins] = useState<Record<string, string>>({});
 
   const load = async () => {
     try {
@@ -380,10 +381,19 @@ export default function AdminAssignmentsPage() {
                   className="space-y-2"
                   onSubmit={async (e) => {
                     e.preventDefault();
-                    await reviewAssignment(a.id, reviewText[a.id] ?? "");
+                    await reviewAssignment(a.id, reviewText[a.id] ?? "", Number(reviewCoins[a.id] ?? 0));
                     await load();
                   }}
                 >
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={reviewCoins[a.id] ?? ""}
+                    onChange={(e) => setReviewCoins((prev) => ({ ...prev, [a.id]: e.target.value }))}
+                    placeholder="Coins for student"
+                    className="w-full brutal-border px-4 py-3 font-mono"
+                  />
                   <input
                     value={reviewText[a.id] ?? ""}
                     onChange={(e) => setReviewText((prev) => ({ ...prev, [a.id]: e.target.value }))}
@@ -398,7 +408,7 @@ export default function AdminAssignmentsPage() {
 
               {a.reviewedAt ? (
                 <div className="bg-green-50 border-2 border-green-600 p-3 font-mono text-sm inline-flex items-center gap-2">
-                  <CheckCircle2 size={16} /> Reviewed
+                  <CheckCircle2 size={16} /> Reviewed{typeof a.awardedCoins === "number" ? ` / +${a.awardedCoins} coin` : ""}
                 </div>
               ) : null}
             </article>
