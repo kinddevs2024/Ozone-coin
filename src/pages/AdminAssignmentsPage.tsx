@@ -309,17 +309,20 @@ export default function AdminAssignmentsPage() {
                   className="space-y-2"
                   onSubmit={async (e) => {
                     e.preventDefault();
-                    await reviewAssignment(a.id, reviewText[a.id] ?? "", Number(reviewCoins[a.id] ?? 0));
+                    const raw = Number(reviewCoins[a.id] ?? 0);
+                    const coins = Math.min(10, Math.max(0, Math.floor(Number.isFinite(raw) ? raw : 0)));
+                    await reviewAssignment(a.id, reviewText[a.id] ?? "", coins);
                     await load();
                   }}
                 >
                   <input
                     type="number"
                     min="0"
+                    max="10"
                     step="1"
                     value={reviewCoins[a.id] ?? ""}
                     onChange={(e) => setReviewCoins((prev) => ({ ...prev, [a.id]: e.target.value }))}
-                    placeholder="Coins for student"
+                    placeholder="0–10 coin (10 ballik shkala)"
                     className="w-full brutal-border px-4 py-3 font-mono"
                   />
                   <input

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Coins, X } from "lucide-react";
 import BrutalAppPageHeader from "../components/BrutalAppPageHeader";
 import BrutalCustomSelect from "../components/BrutalCustomSelect";
@@ -21,6 +21,7 @@ export default function AdminJournalAttendancePage() {
   const [classId, setClassId] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [slotsToday, setSlotsToday] = useState<ScheduleSlotItem[]>([]);
+  const [weekSlotCount, setWeekSlotCount] = useState(0);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
@@ -63,6 +64,8 @@ export default function AdminJournalAttendancePage() {
     setError("");
     try {
       const week = await getScheduleWeek(classId, mondayOfDate);
+      const totalSlots = week.days.reduce((n, d) => n + (d.slots?.length ?? 0), 0);
+      setWeekSlotCount(totalSlots);
       const day = week.days.find((x) => x.date === date);
       const slots = day?.slots ?? [];
       setSlotsToday(slots);
@@ -76,6 +79,7 @@ export default function AdminJournalAttendancePage() {
       }
     } catch {
       setSlotsToday([]);
+      setWeekSlotCount(0);
       setError("Jadvalni yuklab bo'lmadi.");
     }
   };
@@ -223,6 +227,25 @@ export default function AdminJournalAttendancePage() {
         {selectedSlotId && students.length > 0 ? (
           <section className="brutal-border bg-white p-6 space-y-4">
             <h2 className="font-display text-lg uppercase">O&apos;quvchilar</h2>
+            <div className="font-mono text-xs text-gray-800 border-2 border-black bg-[#f5f5f5] p-3 space-y-2 leading-relaxed">
+              <p>
+                <span className="font-bold">Qoidalar (qisqa):</span> uy vazifasi reviewda{" "}
+                <span className="font-bold">0–10 coin</span>; darsda bajarilgan topshiriq uchun o‘qituvchi{" "}
+                <span className="font-bold">10 coingacha</span> (alohida).{" "}
+                <span className="font-bold">Bitta dars sloti</span> (shu sana va vaqt) uchun kelish + darsdagi mukofotlar{" "}
+                <span className="font-bold">jami 30 coindan oshmasin</span>.
+              </p>
+              {weekSlotCount > 0 ? (
+                <p>
+                  Bu hafta jadvalda <span className="font-bold">{weekSlotCount}</span> ta slot — shu slotlar bo‘yicha haftalik
+                  yuqori chekka taxminan <span className="font-bold">{weekSlotCount * 30} coin</span> (har slot max 30). Batafsil:{" "}
+                  <Link to="/rules" className="font-bold underline text-blue-800 hover:text-blue-950">
+                    Qoidalar
+                  </Link>
+                  .
+                </p>
+              ) : null}
+            </div>
             <ul className="space-y-2">
               {students.map((st) => (
                 <li key={st.id} className="flex items-center justify-between gap-3 border-2 border-black px-3 py-2 bg-[#f5f5f5]">
