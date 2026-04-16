@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Download, Coins } from "lucide-react";
+import BrutalAppPageHeader from "../components/BrutalAppPageHeader";
 import BrutalCustomSelect from "../components/BrutalCustomSelect";
 import BrutalDatePicker from "../components/BrutalDatePicker";
 import { getClasses, getDailyReport, getRangeReport, type ClassItem, type DailyReportResponse, type RangeReportResponse } from "../db";
@@ -111,19 +112,20 @@ export default function AdminJournalReportsPage() {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] pb-20">
-      <header className="bg-[#FFD700] border-b-4 border-black p-6 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-display text-2xl md:text-3xl uppercase">Hisobotlar</h1>
+      <BrutalAppPageHeader
+        pageLabel="Hisobotlar"
+        maxWidthClass="max-w-6xl"
+        right={
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="brutal-btn flex h-[44px] w-[44px] items-center justify-center p-0"
+            className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
             aria-label="Orqaga"
           >
             <ArrowLeft size={18} />
           </button>
-        </div>
-      </header>
+        }
+      />
 
       <main className="max-w-6xl mx-auto p-6 space-y-6">
         <div className="brutal-border bg-white p-4 flex flex-wrap gap-4 items-end">
