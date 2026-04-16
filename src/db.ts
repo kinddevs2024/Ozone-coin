@@ -136,6 +136,33 @@ export async function getStudents(classId: string): Promise<StudentItem[]> {
   }
 }
 
+export interface ClassRatingsRow {
+  id: string;
+  name: string;
+  coins: number;
+  stars: number;
+  rank: number;
+}
+
+export interface ClassRatingsPageResponse {
+  classId: string;
+  total: number;
+  page: number;
+  pageSize: number;
+  maxCoins: number;
+  hasMore: boolean;
+  items: ClassRatingsRow[];
+}
+
+export async function getClassRatingsPage(
+  classId: string,
+  page = 0,
+  pageSize = 10
+): Promise<ClassRatingsPageResponse> {
+  const qs = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+  return await api(`/api/classes/${encodeURIComponent(classId)}/ratings?${qs}`);
+}
+
 export async function getAdminStudents(classId: string): Promise<StudentItem[]> {
   try {
     const data = await api(`/api/admin/classes/${classId}/students`, { headers: authHeaders() });
