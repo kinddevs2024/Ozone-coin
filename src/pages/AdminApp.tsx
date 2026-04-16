@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import * as XLSX from "xlsx";
 import {
   Coins,
   Plus,
@@ -19,8 +18,9 @@ import {
   BookOpen,
   ClipboardPlus,
   ClipboardCheck,
+  Send,
   ImagePlus,
-  Upload,
+  Pencil,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { clearAdminToken } from "../api";
@@ -30,15 +30,14 @@ import {
   getAdminStudents,
   addClass,
   deleteClass as dbDeleteClass,
+  updateClass as dbUpdateClass,
   addStudent,
   deleteStudent as dbDeleteStudent,
   updateCoins,
   resetClassCoins,
   createAssignment,
-  importStudents,
+  createAssignmentsForClass,
   type ClassItem,
-  type ImportedStudentCredential,
-  type ImportedStudentSkip,
   type StudentItem,
 } from "../db";
 
@@ -50,6 +49,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
   const [newStudentName, setNewStudentName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [assignmentModalStudent, setAssignmentModalStudent] = useState<StudentItem | null>(null);
+  const [assignmentTargetType, setAssignmentTargetType] = useState<"student" | "class">("student");
   const [assignmentTitle, setAssignmentTitle] = useState("");
   const [assignmentText, setAssignmentText] = useState("");
   const [assignmentLink, setAssignmentLink] = useState("");
@@ -57,11 +57,6 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
   const [assignmentImageName, setAssignmentImageName] = useState("");
   const [assignmentDueDate, setAssignmentDueDate] = useState("");
   const [isSendingAssignment, setIsSendingAssignment] = useState(false);
-  const [isImportingStudents, setIsImportingStudents] = useState(false);
-  const [importSummary, setImportSummary] = useState<{
-    created: ImportedStudentCredential[];
-    skipped: ImportedStudentSkip[];
-  } | null>(null);
 
   const fileToDataUrl = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -70,51 +65,6 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
       reader.onerror = () => reject(new Error("Image read failed"));
       reader.readAsDataURL(file);
     });
-
-  const parseStudentsFromWorkbook = async (file: File): Promise<{ name: string; className: string }[]> => {
-    const buffer = await file.arrayBuffer();
-    const workbook = XLSX.read(buffer, { type: "array" });
-    const targetSheetName =
-      workbook.SheetNames.find((name) => {
-        const normalized = name.toLowerCase().replace(/\s+/g, "");
-        return normalized.includes("umumiy") && (normalized.includes("royxat") || normalized.includes("royhat"));
-      }) ?? workbook.SheetNames[0];
-
-    const worksheet = workbook.Sheets[targetSheetName];
-    const rows = XLSX.utils.sheet_to_json<(string | number | boolean)[]>(worksheet, {
-      header: 1,
-      raw: false,
-      defval: "",
-    });
-
-    const normalizeCell = (value: unknown) => String(value ?? "").replace(/\s+/g, " ").trim();
-    const headerRowIndex = rows.findIndex((row) => {
-      const normalizedRow = row.map((cell) => normalizeCell(cell).toLowerCase());
-      const hasName = normalizedRow.some((cell) => cell.includes("o'quvchi") || cell.includes("oquvchi") || cell.includes("f.i"));
-      const hasClass = normalizedRow.some((cell) => cell === "sinf" || cell.startsWith("sinf("));
-      return hasName && hasClass;
-    });
-
-    if (headerRowIndex === -1) {
-      throw new Error("Excel jadvalida ism va sinf ustunlari topilmadi.");
-    }
-
-    const headerRow = rows[headerRowIndex].map((cell) => normalizeCell(cell).toLowerCase());
-    const nameIndex = headerRow.findIndex((cell) => cell.includes("o'quvchi") || cell.includes("oquvchi") || cell.includes("f.i"));
-    const classIndex = headerRow.findIndex((cell) => cell === "sinf" || cell.startsWith("sinf("));
-
-    if (nameIndex === -1 || classIndex === -1) {
-      throw new Error("Excel ustunlari noto'g'ri formatda.");
-    }
-
-    return rows
-      .slice(headerRowIndex + 1)
-      .map((row) => ({
-        name: normalizeCell(row[nameIndex]),
-        className: normalizeCell(row[classIndex]).toUpperCase(),
-      }))
-      .filter((row) => row.name && row.className);
-  };
 
   useEffect(() => {
     fetchClasses();
@@ -167,6 +117,19 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
     }
   };
 
+  const handleEditClass = async (cls: ClassItem) => {
+    const nextName = window.prompt("Yangi sinf nomini kiriting", cls.name)?.trim();
+    if (!nextName || nextName === cls.name) return;
+    try {
+      await dbUpdateClass(cls.id, nextName);
+      setClasses((prev) => prev.map((item) => (item.id === cls.id ? { ...item, name: nextName } : item)));
+      setSelectedClass((prev) => (prev?.id === cls.id ? { ...prev, name: nextName } : prev));
+    } catch (err) {
+      console.error("Failed to update class", err);
+      window.alert("Sinf nomini o'zgartirib bo'lmadi.");
+    }
+  };
+
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudentName.trim() || !selectedClass) return;
@@ -194,27 +157,6 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
     }
   };
 
-  const handleImportStudents = async (file: File) => {
-    try {
-      setIsImportingStudents(true);
-      const studentsFromExcel = await parseStudentsFromWorkbook(file);
-      if (studentsFromExcel.length === 0) {
-        window.alert("Excel faylida import uchun o'quvchilar topilmadi.");
-        return;
-      }
-      const result = await importStudents({ students: studentsFromExcel });
-      setImportSummary(result);
-      await fetchClasses();
-      if (selectedClass) await fetchStudents(selectedClass.id);
-      window.alert(`Import tugadi. Yangi: ${result.created.length}, o'tkazib yuborildi: ${result.skipped.length}`);
-    } catch (err) {
-      console.error("Failed to import students", err);
-      window.alert(err instanceof Error ? err.message : "Excel import ishlamadi.");
-    } finally {
-      setIsImportingStudents(false);
-    }
-  };
-
   const handleUpdateCoins = async (studentId: string, amount: number) => {
     try {
       await updateCoins(studentId, amount);
@@ -225,7 +167,19 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
   };
 
   const openAssignmentModal = (student: StudentItem) => {
+    setAssignmentTargetType("student");
     setAssignmentModalStudent(student);
+    setAssignmentTitle("");
+    setAssignmentText("");
+    setAssignmentLink("");
+    setAssignmentImageDataUrl("");
+    setAssignmentImageName("");
+    setAssignmentDueDate("");
+  };
+
+  const openClassAssignmentModal = () => {
+    setAssignmentTargetType("class");
+    setAssignmentModalStudent(null);
     setAssignmentTitle("");
     setAssignmentText("");
     setAssignmentLink("");
@@ -242,7 +196,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
   const handleCreateAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClass) return;
-    if (!assignmentModalStudent) return;
+    if (assignmentTargetType === "student" && !assignmentModalStudent) return;
     if (!assignmentTitle.trim()) {
       window.alert("Please enter homework title.");
       return;
@@ -253,16 +207,28 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
     }
     try {
       setIsSendingAssignment(true);
-      await createAssignment({
-        studentId: assignmentModalStudent.id,
-        classId: selectedClass.id,
-        title: assignmentTitle.trim(),
-        text: assignmentText.trim(),
-        link: assignmentLink.trim() || null,
-        imageDataUrl: assignmentImageDataUrl.trim() || null,
-        dueAt: assignmentDueDate || null,
-      });
-      window.alert("Assignment sent to student.");
+      if (assignmentTargetType === "class") {
+        await createAssignmentsForClass({
+          classId: selectedClass.id,
+          title: assignmentTitle.trim(),
+          text: assignmentText.trim(),
+          link: assignmentLink.trim() || null,
+          imageDataUrl: assignmentImageDataUrl.trim() || null,
+          dueAt: assignmentDueDate || null,
+        });
+        window.alert("Assignment sent to whole class.");
+      } else {
+        await createAssignment({
+          studentId: assignmentModalStudent!.id,
+          classId: selectedClass.id,
+          title: assignmentTitle.trim(),
+          text: assignmentText.trim(),
+          link: assignmentLink.trim() || null,
+          imageDataUrl: assignmentImageDataUrl.trim() || null,
+          dueAt: assignmentDueDate || null,
+        });
+        window.alert("Assignment sent to student.");
+      }
       setAssignmentModalStudent(null);
     } catch (err) {
       console.error("Failed to create assignment", err);
@@ -364,87 +330,6 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                   </button>
                 </form>
 
-                <div className="mb-8 brutal-border bg-white p-6 space-y-4">
-                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <h3 className="font-display text-2xl uppercase">Excel orqali import</h3>
-                      <p className="font-mono text-sm text-gray-600">
-                        `Umumiy royxat` jadvalidan ism va sinf ustunlari o'qiladi. Yangi login va vaqtinchalik parollar avtomatik yaratiladi.
-                      </p>
-                    </div>
-                    <label className="brutal-btn-yellow inline-flex h-[52px] cursor-pointer items-center justify-center gap-2 px-4 py-2">
-                      <Upload size={18} />
-                      <span>{isImportingStudents ? "Import..." : "Excel yuklash"}</span>
-                      <input
-                        type="file"
-                        accept=".xlsx,.xls"
-                        className="hidden"
-                        disabled={isImportingStudents}
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          e.currentTarget.value = "";
-                          if (!file) return;
-                          await handleImportStudents(file);
-                        }}
-                      />
-                    </label>
-                  </div>
-
-                  {importSummary ? (
-                    <div className="space-y-4">
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <div className="border-2 border-black bg-yellow-50 p-4 font-mono text-sm">
-                          Yangi o'quvchilar: <span className="font-bold">{importSummary.created.length}</span>
-                        </div>
-                        <div className="border-2 border-black bg-gray-50 p-4 font-mono text-sm">
-                          O'tkazib yuborildi: <span className="font-bold">{importSummary.skipped.length}</span>
-                        </div>
-                      </div>
-
-                      {importSummary.created.length > 0 ? (
-                        <div className="space-y-2">
-                          <h4 className="font-display text-xl uppercase">Login va parollar</h4>
-                          <div className="max-h-96 overflow-auto brutal-border">
-                            <table className="min-w-full bg-white font-mono text-sm">
-                              <thead className="bg-[#FFD700]">
-                                <tr>
-                                  <th className="border-b-2 border-black px-3 py-2 text-left">O'quvchi</th>
-                                  <th className="border-b-2 border-black px-3 py-2 text-left">Sinf</th>
-                                  <th className="border-b-2 border-black px-3 py-2 text-left">Login</th>
-                                  <th className="border-b-2 border-black px-3 py-2 text-left">Parol</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {importSummary.created.map((student) => (
-                                  <tr key={student.id} className="border-b border-gray-200 align-top">
-                                    <td className="px-3 py-2">{student.name}</td>
-                                    <td className="px-3 py-2">{student.className}</td>
-                                    <td className="px-3 py-2">{student.email}</td>
-                                    <td className="px-3 py-2 font-bold">{student.initialPassword}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      {importSummary.skipped.length > 0 ? (
-                        <div className="space-y-2">
-                          <h4 className="font-display text-xl uppercase">O'tkazib yuborilganlar</h4>
-                          <div className="space-y-2">
-                            {importSummary.skipped.map((student, index) => (
-                              <div key={`${student.className}-${student.name}-${index}`} className="border-2 border-gray-200 bg-gray-50 p-3 font-mono text-sm">
-                                {student.className} / {student.name} / {student.reason}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {classes.map((cls) => (
                     <div
@@ -462,6 +347,16 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditClass(cls);
+                          }}
+                          className="p-2 text-gray-400 hover:text-blue-600 transition-colors relative z-20"
+                          aria-label="Tahrirlash"
+                        >
+                          <Pencil size={20} />
+                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -508,16 +403,24 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
                 <h2 className="font-display text-5xl uppercase mb-2 flex items-center gap-3">
                   <Users size={40} /> {selectedClass.name}
                 </h2>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="flex items-center gap-2 font-mono text-sm font-bold uppercase">
                     <Users size={16} /> {students.length} o'quvchi
                   </div>
-                  <button
-                    onClick={handleResetCoins}
-                    className="brutal-btn bg-red-500 text-white flex items-center gap-2 px-4 py-2 text-sm hover:bg-red-600"
-                  >
-                    <RotateCcw size={16} /> Coinlarni qayta tiklash
-                  </button>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={openClassAssignmentModal}
+                      className="brutal-btn bg-black text-white flex items-center gap-2 px-4 py-2 text-sm"
+                    >
+                      <Send size={16} /> Topshiriq yuborish
+                    </button>
+                    <button
+                      onClick={handleResetCoins}
+                      className="brutal-btn bg-red-500 text-white flex items-center gap-2 px-4 py-2 text-sm hover:bg-red-600"
+                    >
+                      <RotateCcw size={16} /> Coinlarni qayta tiklash
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -626,12 +529,16 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
           )}
         </AnimatePresence>
       </main>
-      {assignmentModalStudent && (
+      {(assignmentModalStudent || assignmentTargetType === "class") && (
         <div className="fixed inset-0 z-[120] bg-black/50 p-4 flex items-center justify-center">
           <div className="w-full max-w-lg brutal-border bg-white p-6">
             <h3 className="font-display text-2xl uppercase mb-2">New homework</h3>
             <p className="font-mono text-sm mb-4">
-              Student: <span className="font-bold">{assignmentModalStudent.name}</span>
+              {assignmentTargetType === "class" ? (
+                <>Class: <span className="font-bold">{selectedClass?.name}</span></>
+              ) : (
+                <>Student: <span className="font-bold">{assignmentModalStudent?.name}</span></>
+              )}
             </p>
             <form className="space-y-3" onSubmit={handleCreateAssignment}>
               <input

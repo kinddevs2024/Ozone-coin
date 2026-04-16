@@ -76,25 +76,6 @@ export interface AnalyticsItem {
   studentsBefore: { name: string; coins: number }[];
 }
 
-export interface ImportedStudentCredential {
-  id: string;
-  name: string;
-  className: string;
-  email: string;
-  initialPassword: string;
-}
-
-export interface ImportedStudentSkip {
-  name: string;
-  className: string;
-  reason: string;
-}
-
-export interface StudentImportResult {
-  created: ImportedStudentCredential[];
-  skipped: ImportedStudentSkip[];
-}
-
 export interface CoinStatsStudentRow {
   studentId: string;
   studentName: string;
@@ -169,6 +150,14 @@ export async function addClass(name: string): Promise<{ id: string }> {
 
 export async function deleteClass(id: string): Promise<void> {
   await api(`/api/classes/${id}`, { method: "DELETE", headers: authHeaders() });
+}
+
+export async function updateClass(id: string, name: string): Promise<void> {
+  await api(`/api/classes/${id}`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify({ name: name.trim() }),
+  });
 }
 
 export async function addStudent(name: string, classId: string): Promise<StudentItem> {
@@ -280,18 +269,6 @@ export async function reviewAssignment(
     headers: authHeaders(),
     body: JSON.stringify({ reviewComment, awardedCoins }),
   });
-}
-
-export async function importStudents(payload: { students: { name: string; className: string }[] }): Promise<StudentImportResult> {
-  const data = await api("/api/admin/import-students", {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify(payload),
-  });
-  return {
-    created: Array.isArray(data?.created) ? data.created : [],
-    skipped: Array.isArray(data?.skipped) ? data.skipped : [],
-  };
 }
 
 export async function updateStudentProfile(payload: { name?: string; newPassword?: string }): Promise<void> {
