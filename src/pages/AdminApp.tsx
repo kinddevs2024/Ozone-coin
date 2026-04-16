@@ -21,6 +21,7 @@ import {
   Send,
   ImagePlus,
   Pencil,
+  CalendarDays,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { clearAdminToken } from "../api";
@@ -291,7 +292,8 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
           </button>
           <HeaderMenu items={[
             { label: "Qoidalar", icon: <BookOpen size={18} />, to: "/rules" },
-            { label: "Analitika", icon: <BarChart3 size={18} />, to: "/analytics" },
+            { label: "Dars va davomat", icon: <CalendarDays size={18} />, to: "/admin/jurnal" },
+            { label: "Analitika", icon: <BarChart3 size={18} />, to: "/admin/analytics" },
             { label: "Tekshirish", icon: <ClipboardCheck size={18} />, to: "/admin/assignments" },
             { label: "Community", icon: <MessageSquareMore size={18} />, to: "/community" },
             { label: "Chiqish", icon: <LogOut size={18} />, onClick: handleLogout },

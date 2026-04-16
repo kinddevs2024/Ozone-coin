@@ -350,7 +350,7 @@ export async function resetClassCoins(classId: string): Promise<AnalyticsItem> {
 
 export async function getAnalytics(): Promise<AnalyticsItem[]> {
   try {
-    const data = await api("/api/analytics");
+    const data = await api("/api/analytics", { headers: authHeaders() });
     return Array.isArray(data) ? data : [];
   } catch {
     return [];
@@ -358,7 +358,7 @@ export async function getAnalytics(): Promise<AnalyticsItem[]> {
 }
 
 export async function getAnalyticsOverview(): Promise<AnalyticsOverview> {
-  const data = await api("/api/analytics/overview");
+  const data = await api("/api/analytics/overview", { headers: authHeaders() });
   return {
     classesCount: Number(data?.classesCount ?? 0),
     studentsCount: Number(data?.studentsCount ?? 0),
@@ -376,7 +376,7 @@ export async function getCoinStats(params?: {
   if (params?.from) search.set("from", params.from);
   if (params?.to) search.set("to", params.to);
   const qs = search.toString();
-  const data = await api(`/api/coin-stats${qs ? `?${qs}` : ""}`);
+  const data = await api(`/api/coin-stats${qs ? `?${qs}` : ""}`, { headers: authHeaders() });
   return {
     mode: data?.mode === "month" || data?.mode === "custom" ? data.mode : "day",
     from: typeof data?.from === "string" ? data.from : null,
@@ -385,4 +385,131 @@ export async function getCoinStats(params?: {
     overall: Array.isArray(data?.overall) ? data.overall : [],
     classes: Array.isArray(data?.classes) ? data.classes : [],
   };
+}
+
+/** Hafta: 0 = dushanba … 6 = yakshanba */
+export interface ScheduleSlotItem {
+  id: string;
+  classId: string;
+  weekday: number;
+  title: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface ScheduleWeekDay {
+  date: string;
+  weekday: number;
+  label: string;
+  slots: ScheduleSlotItem[];
+}
+
+export interface ScheduleWeekResponse {
+  weekStart: string;
+  days: ScheduleWeekDay[];
+}
+
+export interface AttendanceStateResponse {
+  students: { id: string; name: string }[];
+  attendance: Record<string, boolean>;
+}
+
+export interface DailyReportSlot {
+  id?: string;
+  scheduleSlotId?: string;
+  title: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface DailyReportSlotPresence {
+  scheduleSlotId: string;
+  title: string;
+  startTime: string;
+  endTime: string;
+  present: boolean | null;
+}
+
+export interface DailyReportRow {
+  studentId: string;
+  studentName: string;
+  coinsDay: number;
+  slots: DailyReportSlotPresence[];
+}
+
+export interface DailyReportResponse {
+  date: string;
+  classId: string;
+  slots: DailyReportSlot[];
+  rows: DailyReportRow[];
+}
+
+export interface RangeReportDay {
+  date: string;
+  slots: { id: string; title: string; startTime: string; endTime: string }[];
+  rows: DailyReportRow[];
+}
+
+export interface RangeReportResponse {
+  classId: string;
+  from: string;
+  to: string;
+  days: RangeReportDay[];
+}
+
+export async function getScheduleSlots(classId: string): Promise<ScheduleSlotItem[]> {
+  const data = await api(`/api/admin/schedule-slots?classId=${encodeURIComponent(classId)}`, { headers: authHeaders() });
+  return Array.isArray(data) ? data : [];
+}
+
+export async function getScheduleWeek(classId: string, weekStart?: string): Promise<ScheduleWeekResponse> {
+  const qs = new URLSearchParams({ classId });
+  if (weekStart) qs.set("weekStart", weekStart);
+  return await api(`/api/admin/schedule-week?${qs}`, { headers: authHeaders() });
+}
+
+export async function addScheduleSlot(payload: {
+  classId: string;
+  weekday: number;
+  title?: string;
+  startTime: string;
+  endTime: string;
+}): Promise<ScheduleSlotItem> {
+  return await api("/api/admin/schedule-slots", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteScheduleSlot(id: string): Promise<void> {
+  await api(`/api/admin/schedule-slots/${id}`, { method: "DELETE", headers: authHeaders() });
+}
+
+export async function getAttendance(classId: string, date: string, scheduleSlotId: string): Promise<AttendanceStateResponse> {
+  const qs = new URLSearchParams({ classId, date, scheduleSlotId });
+  return await api(`/api/admin/attendance?${qs}`, { headers: authHeaders() });
+}
+
+export async function saveAttendance(payload: {
+  classId: string;
+  date: string;
+  scheduleSlotId: string;
+  attendance: Record<string, boolean>;
+}): Promise<void> {
+  await api("/api/admin/attendance", {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getDailyReport(classId: string, date: string): Promise<DailyReportResponse> {
+  const qs = new URLSearchParams({ classId, date });
+  return await api(`/api/admin/reports/daily?${qs}`, { headers: authHeaders() });
+}
+
+export async function getRangeReport(classId: string, from: string, to: string): Promise<RangeReportResponse> {
+  const qs = new URLSearchParams({ classId, from, to });
+  return await api(`/api/admin/reports/range?${qs}`, { headers: authHeaders() });
 }

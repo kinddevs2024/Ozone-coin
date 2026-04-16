@@ -190,7 +190,7 @@ export default function AnalyticsPage() {
             >
               <BookOpen size={18} />
             </Link>
-            <Link to="/" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Bosh sahifa" aria-label="Bosh sahifa">
+            <Link to="/admin" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Admin panel" aria-label="Admin panel">
               <ArrowLeft size={18} />
             </Link>
           </div>

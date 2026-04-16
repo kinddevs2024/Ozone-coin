@@ -13,6 +13,10 @@ import AdminApp from "./pages/AdminApp";
 import AdminAssignmentsPage from "./pages/AdminAssignmentsPage";
 import RulesPage from "./pages/RulesPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import AdminJournalHubPage from "./pages/AdminJournalHubPage";
+import AdminJournalSchedulePage from "./pages/AdminJournalSchedulePage";
+import AdminJournalAttendancePage from "./pages/AdminJournalAttendancePage";
+import AdminJournalReportsPage from "./pages/AdminJournalReportsPage";
 import StudentLogin from "./pages/StudentLogin";
 import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentAssignmentsPage from "./pages/StudentAssignmentsPage";
@@ -43,7 +47,12 @@ export default function App() {
         <Route path="/class/:classId" element={<GuestClass />} />
         <Route path="/community" element={<CommunityPage isAdmin={isAdmin} />} />
         <Route path="/rules" element={<RulesPage />} />
-        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/analytics" element={<Navigate to="/admin" replace />} />
+        <Route path="/admin/analytics" element={isAdmin ? <AnalyticsPage /> : <Navigate to="/admin" replace />} />
+        <Route path="/admin/jurnal" element={isAdmin ? <AdminJournalHubPage /> : <Navigate to="/admin" replace />} />
+        <Route path="/admin/jurnal/jadval" element={isAdmin ? <AdminJournalSchedulePage /> : <Navigate to="/admin" replace />} />
+        <Route path="/admin/jurnal/davomat" element={isAdmin ? <AdminJournalAttendancePage /> : <Navigate to="/admin" replace />} />
+        <Route path="/admin/jurnal/hisobotlar" element={isAdmin ? <AdminJournalReportsPage /> : <Navigate to="/admin" replace />} />
         <Route path="/student" element={<StudentLogin />} />
         <Route path="/student/dashboard" element={<StudentDashboardPage />} />
         <Route path="/student/assignments" element={<StudentAssignmentsPage />} />
