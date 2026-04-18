@@ -28,6 +28,7 @@ export default function RatingsPage() {
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
+  const [calendarMonthKey, setCalendarMonthKey] = useState<string | null>(null);
 
   const loadPage = useCallback(async (page: number, append: boolean) => {
     if (append) setLoadingMore(true);
@@ -35,6 +36,9 @@ export default function RatingsPage() {
     setError("");
     try {
       const data = await getGlobalRatingsPage(page, PAGE_SIZE);
+      if (typeof data.calendarMonthKey === "string" && data.calendarMonthKey) {
+        setCalendarMonthKey(data.calendarMonthKey);
+      }
       setTotal(data.total);
       setHasMore(data.hasMore);
       setNextPage(page + 1);
@@ -90,7 +94,15 @@ export default function RatingsPage() {
             Barcha sinflardagi o&apos;quvchilar <span className="font-bold text-[#FFD700]">bir umumiy ro&apos;yxatda</span>, coin bo&apos;yicha. Dastlab{" "}
             <span className="font-bold text-[#FFD700]">{PAGE_SIZE} ta</span>, keyin{" "}
             <span className="font-bold text-[#FFD700]">Ko&apos;proq ko&apos;rsatish</span> bilan qolganlari. Yulduzlar (
-            <span className="font-mono">*</span>) butun maktab bo&apos;yicha eng yuqori coin nisbatan 1–5.
+            <span className="font-mono">*</span>) butun maktab bo&apos;yicha eng yuqori coin nisbatan 1–5.{" "}
+            <span className="font-bold text-[#FFD700]">Oylik tsikl (UTC)</span>: har yangi kalendariy oyda reyting yangi davr sifatida hisoblanadi; avvalgi oy yakunidagi umumiy yulduz bo&apos;yicha TOP-10 ga keyingi oy boshida qo&apos;shimcha coin beriladi (
+            <span className="font-bold">o&apos;rin × 10</span>
+            {calendarMonthKey ? (
+              <>
+                ; joriy oy: <span className="font-bold">{calendarMonthKey}</span>
+              </>
+            ) : null}
+            ). Batafsil — Qoidalar.
           </p>
         </section>
 

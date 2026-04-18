@@ -106,6 +106,54 @@ export interface AnalyticsOverview {
   activeCoins: number;
 }
 
+export type CameraStatus = "online" | "degraded" | "offline";
+
+export interface CameraSummaryItem {
+  id: string;
+  name: string;
+  location: string;
+  status: CameraStatus;
+  streamUrl: string;
+  previewUrl: string | null;
+  targetFps: number;
+  inputFps: number;
+  processFps: number;
+  latencyMs: number;
+  lastFrameAt: string;
+  peopleCount: number;
+}
+
+export interface CameraBBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface CameraTrackItem {
+  trackId: string;
+  cameraId: string;
+  cameraName: string;
+  globalId: string;
+  confidence: number;
+  reidScore: number;
+  zone: string;
+  dwellSeconds: number;
+  lastSeenAt: string;
+  bbox: CameraBBox;
+}
+
+export interface CameraSummaryResponse {
+  updatedAt: string;
+  cameras: CameraSummaryItem[];
+}
+
+export interface CameraTracksResponse {
+  updatedAt: string;
+  cameraId: string;
+  tracks: CameraTrackItem[];
+}
+
 const base = () => getApiBase();
 
 const api = async (path: string, opts?: RequestInit) => {
@@ -174,6 +222,8 @@ export interface GlobalRatingsPageResponse {
   pageSize: number;
   maxCoins: number;
   hasMore: boolean;
+  /** UTC kalendariy oy (YYYY-MM) — yulduz reytingi va TOP-10 mukofoti shu oy tsikliga bog'langan. */
+  calendarMonthKey?: string;
   items: GlobalRatingsRow[];
 }
 
@@ -430,6 +480,24 @@ export async function getCoinStats(params?: {
     columns: Array.isArray(data?.columns) ? data.columns : [],
     overall: Array.isArray(data?.overall) ? data.overall : [],
     classes: Array.isArray(data?.classes) ? data.classes : [],
+  };
+}
+
+export async function getAdminCameras(): Promise<CameraSummaryResponse> {
+  const data = await api("/api/admin/cameras", { headers: authHeaders() });
+  return {
+    updatedAt: typeof data?.updatedAt === "string" ? data.updatedAt : new Date().toISOString(),
+    cameras: Array.isArray(data?.cameras) ? data.cameras : [],
+  };
+}
+
+export async function getAdminCameraTracks(cameraId?: string | null): Promise<CameraTracksResponse> {
+  const qs = cameraId && cameraId !== "all" ? `?cameraId=${encodeURIComponent(cameraId)}` : "";
+  const data = await api(`/api/admin/camera-tracks${qs}`, { headers: authHeaders() });
+  return {
+    updatedAt: typeof data?.updatedAt === "string" ? data.updatedAt : new Date().toISOString(),
+    cameraId: typeof data?.cameraId === "string" ? data.cameraId : "all",
+    tracks: Array.isArray(data?.tracks) ? data.tracks : [],
   };
 }
 

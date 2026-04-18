@@ -18,6 +18,7 @@ import AdminJournalHubPage from "./pages/AdminJournalHubPage";
 import AdminJournalSchedulePage from "./pages/AdminJournalSchedulePage";
 import AdminJournalAttendancePage from "./pages/AdminJournalAttendancePage";
 import AdminJournalReportsPage from "./pages/AdminJournalReportsPage";
+import AdminCameraTrackingPage from "./pages/AdminCameraTrackingPage";
 import StudentLogin from "./pages/StudentLogin";
 import StudentDashboardPage from "./pages/StudentDashboardPage";
 import StudentAssignmentsPage from "./pages/StudentAssignmentsPage";
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="/admin/jurnal/jadval" element={isAdmin ? <AdminJournalSchedulePage /> : <Navigate to="/admin" replace />} />
         <Route path="/admin/jurnal/davomat" element={isAdmin ? <AdminJournalAttendancePage /> : <Navigate to="/admin" replace />} />
         <Route path="/admin/jurnal/hisobotlar" element={isAdmin ? <AdminJournalReportsPage /> : <Navigate to="/admin" replace />} />
+        <Route path="/admin/cameras" element={isAdmin ? <AdminCameraTrackingPage /> : <Navigate to="/admin" replace />} />
         <Route path="/student" element={<StudentLogin />} />
         <Route path="/student/dashboard" element={<StudentDashboardPage />} />
         <Route path="/student/assignments" element={<StudentAssignmentsPage />} />

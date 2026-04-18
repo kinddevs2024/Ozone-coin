@@ -95,6 +95,20 @@ const monthlyTopBonuses = [
   { condition: "3-o‘rin", bonus: "Keyingi davr boshida +10 coin" },
 ];
 
+/** Umumiy yulduz reytingi TOP-10: o‘rin × 10 coin (masalan 7-o‘rin → 70, 9-o‘rin → 90). */
+const globalStarTop10Rewards = [
+  { rank: "1-o‘rin", bonus: "+10 coin" },
+  { rank: "2-o‘rin", bonus: "+20 coin" },
+  { rank: "3-o‘rin", bonus: "+30 coin" },
+  { rank: "4-o‘rin", bonus: "+40 coin" },
+  { rank: "5-o‘rin", bonus: "+50 coin" },
+  { rank: "6-o‘rin", bonus: "+60 coin" },
+  { rank: "7-o‘rin", bonus: "+70 coin" },
+  { rank: "8-o‘rin", bonus: "+80 coin" },
+  { rank: "9-o‘rin", bonus: "+90 coin" },
+  { rank: "10-o‘rin", bonus: "+100 coin" },
+];
+
 export default function RulesContent() {
   return (
     <>
@@ -211,10 +225,34 @@ export default function RulesContent() {
         </div>
       </section>
 
+      <section className="brutal-border bg-white p-6">
+        <h3 className="font-display text-2xl uppercase mb-4 flex items-center gap-2">
+          ⭐ Umumiy yulduz reytingi (oylik, UTC)
+        </h3>
+        <p className="font-mono text-sm text-gray-700 mb-3">
+          Reyting sahifasidagi <span className="font-bold">barcha sinflar umumiy ro‘yxati</span> har oy (UTC kalendariy oy) bo‘yicha yangi davr sifatida qaraladi: yulduzlar joriy coinlar va maktabdagi eng yuqori coin nisbatidan 1–5.{" "}
+          <span className="font-bold">Oldingi oy yakuni</span> bo‘yicha shu ro‘yxatda yulduz bo‘yicha saralangan holda birinchi 10 ta o‘quvchi keyingi oy boshida (UTC) avtomatik qo‘shimcha coin oladi —{" "}
+          <span className="font-bold">o‘rin × 10</span> (masalan 9-o‘rin → 90 coin). Saralash: avvalo yulduz (kamdan ko‘p), keyin coin, keyin ism.
+        </p>
+        <p className="font-mono text-xs text-gray-600 mb-3">
+          Bu mukofot <span className="font-bold">sinf ichidagi</span> oy yakuni TOP-3 (yuqoridagi blok) bilan alohida: ikkalasi ham berilishi mumkin.
+        </p>
+        <div className="space-y-2">
+          {globalStarTop10Rewards.map((r) => (
+            <div
+              key={r.rank}
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 bg-yellow-50 border-2 border-yellow-300"
+            >
+              <span className="font-bold">{r.rank}</span>
+              <span className="font-mono font-bold text-amber-900 text-lg shrink-0">{r.bonus}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="brutal-border bg-[#FFD700] p-6">
         <p className="font-mono text-sm font-bold text-center uppercase">
-          ⚠️ Coinlar har 30 kunda avtomatik ravishda qayta tiklanadi (har bir sinf uchun alohida). Resetdan oldin reyting tuziladi: TOP-3 keyingi oy
-          boshida qo‘shimcha coin bilan boshlaydi.
+          ⚠️ Coinlar har 30 kunda avtomatik ravishda qayta tiklanadi (har bir sinf uchun alohida). Resetdan oldin sinf bo‘yicha TOP-3 keyingi davr boshida qo‘shimcha coin bilan boshlaydi. Umumiy yulduz reytingi esa UTC bo‘yicha oylik tsikl va TOP-10 mukofoti — yuqoridagi blok.
         </p>
       </section>
     </>
