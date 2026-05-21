@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { Coins, ImagePlus, MessageSquare, PencilLine, Users, ArrowLeft, LoaderCircle, Trash2, Edit3, X, Check, BookOpen, Trophy } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Coins, ImagePlus, MessageSquare, PencilLine, Users, ArrowLeft, LoaderCircle, Trash2, Edit3, X, Check, BookOpen, Trophy, FolderKanban } from "lucide-react";
 import { addCommunityPost, getCommunityPosts, deleteCommunityPost, editCommunityPost, type CommunityPostItem } from "../db";
 import BrutalAppPageHeader from "../components/BrutalAppPageHeader";
+import HeaderMenu from "../components/HeaderMenu";
 
 function formatPostDate(value: string): string {
   const date = new Date(value);
@@ -232,27 +232,14 @@ export default function CommunityPage({ isAdmin }: { isAdmin: boolean }) {
         brandAriaLabel="Sahifadagi ma'lumotlarni yangilash"
         onBrandClick={handleBrandClick}
         right={
-          <>
-            <Link
-              to="/rules"
-              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
-              title="Qoidalar"
-              aria-label="Qoidalar sahifasini ochish"
-            >
-              <BookOpen size={18} />
-            </Link>
-            <Link
-              to="/ratings"
-              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
-              title="Reyting"
-              aria-label="Reyting sahifasini ochish"
-            >
-              <Trophy size={18} />
-            </Link>
-            <Link to="/" className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0" title="Bosh sahifa" aria-label="Bosh sahifa">
-              <ArrowLeft size={18} />
-            </Link>
-          </>
+          <HeaderMenu
+            items={[
+              { label: "Qoidalar", icon: <BookOpen size={18} />, to: "/rules" },
+              { label: "Reyting", icon: <Trophy size={18} />, to: "/ratings" },
+              { label: "Ishlar", icon: <FolderKanban size={18} />, to: "/works" },
+              { label: "Bosh sahifa", icon: <ArrowLeft size={18} />, to: "/" },
+            ]}
+          />
         }
       />
 

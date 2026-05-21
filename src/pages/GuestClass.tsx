@@ -1,8 +1,9 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Coins, Users, ArrowLeft, Award, Trophy, Search, X, MessageSquareMore, BookOpen } from "lucide-react";
+import { Coins, Users, ArrowLeft, Award, Trophy, Search, X, MessageSquareMore, BookOpen, FolderKanban } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { getClasses, getStudents, type StudentItem } from "../db";
+import HeaderMenu from "../components/HeaderMenu";
 
 export default function GuestClass() {
   const { classId } = useParams<{ classId: string }>();
@@ -89,32 +90,14 @@ export default function GuestClass() {
             </div>
             <h1 className="font-display text-4xl tracking-tight uppercase">Ozone-coin</h1>
           </button>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/rules"
-              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
-              title="Qoidalar"
-              aria-label="Qoidalar sahifasini ochish"
-            >
-              <BookOpen size={18} />
-            </Link>
-            <Link
-              to="/ratings"
-              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
-              title="Reyting"
-              aria-label="Reyting sahifasini ochish"
-            >
-              <Trophy size={18} />
-            </Link>
-            <Link
-              to="/community"
-              className="brutal-btn flex h-[52px] w-[52px] items-center justify-center p-0"
-              title="Community"
-              aria-label="Community sahifasini ochish"
-            >
-              <MessageSquareMore size={18} />
-            </Link>
-          </div>
+          <HeaderMenu
+            items={[
+              { label: "Qoidalar", icon: <BookOpen size={18} />, to: "/rules" },
+              { label: "Reyting", icon: <Trophy size={18} />, to: "/ratings" },
+              { label: "Ishlar", icon: <FolderKanban size={18} />, to: "/works" },
+              { label: "Community", icon: <MessageSquareMore size={18} />, to: "/community" },
+            ]}
+          />
         </div>
       </header>
 

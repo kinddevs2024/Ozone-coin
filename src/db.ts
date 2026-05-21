@@ -67,6 +67,15 @@ export interface CommunityPostItem {
   author: "admin";
 }
 
+export interface StudentProjectItem {
+  id: string;
+  name: string;
+  link: string;
+  imageDataUrl: string;
+  createdAt: string;
+  author: "admin";
+}
+
 export interface AnalyticsItem {
   id: string;
   classId: string;
@@ -435,6 +444,67 @@ export async function editCommunityPost(
     createdAt: data.createdAt,
     author: "admin",
   };
+}
+
+export async function getStudentProjects(): Promise<StudentProjectItem[]> {
+  try {
+    const data = await api("/api/student-projects");
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function addStudentProject(payload: {
+  name: string;
+  link: string;
+  imageDataUrl: string;
+}): Promise<StudentProjectItem> {
+  const data = await api("/api/student-projects", {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      name: payload.name.trim(),
+      link: payload.link.trim(),
+      imageDataUrl: payload.imageDataUrl,
+    }),
+  });
+  return {
+    id: data.id,
+    name: data.name ?? "",
+    link: data.link ?? "",
+    imageDataUrl: data.imageDataUrl ?? "",
+    createdAt: data.createdAt,
+    author: "admin",
+  };
+}
+
+export async function updateStudentProject(
+  id: string,
+  payload: { name: string; link: string; imageDataUrl?: string | null; keepImage?: boolean }
+): Promise<StudentProjectItem> {
+  const data = await api(`/api/student-projects/${id}`, {
+    method: "PUT",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      name: payload.name.trim(),
+      link: payload.link.trim(),
+      imageDataUrl: payload.imageDataUrl ?? null,
+      keepImage: payload.keepImage ?? false,
+    }),
+  });
+  return {
+    id: data.id,
+    name: data.name ?? "",
+    link: data.link ?? "",
+    imageDataUrl: data.imageDataUrl ?? "",
+    createdAt: data.createdAt,
+    author: "admin",
+  };
+}
+
+export async function deleteStudentProject(id: string): Promise<void> {
+  await api(`/api/student-projects/${id}`, { method: "DELETE", headers: authHeaders() });
 }
 
 export async function resetClassCoins(classId: string): Promise<AnalyticsItem> {

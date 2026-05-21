@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Coins, MessageSquareMore, LogIn, BookOpen, Trophy, Users } from "lucide-react";
+import { ArrowLeft, Coins, MessageSquareMore, LogIn, BookOpen, Trophy, Users, FolderKanban } from "lucide-react";
 import { motion } from "motion/react";
 import BrutalAppPageHeader from "../components/BrutalAppPageHeader";
 import HeaderMenu from "../components/HeaderMenu";
@@ -76,6 +76,7 @@ export default function RatingsPage() {
             items={[
               { label: "Sinflar", icon: <Users size={18} />, to: "/" },
               { label: "Qoidalar", icon: <BookOpen size={18} />, to: "/rules" },
+              { label: "Ishlar", icon: <FolderKanban size={18} />, to: "/works" },
               { label: "Community", icon: <MessageSquareMore size={18} />, to: "/community" },
               { label: "Login", icon: <LogIn size={18} />, to: "/student" },
               { label: "Bosh sahifa", icon: <ArrowLeft size={18} />, to: "/" },

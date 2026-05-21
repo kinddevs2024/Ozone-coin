@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import GuestHome from "./pages/GuestHome";
 import GuestClass from "./pages/GuestClass";
 import CommunityPage from "./pages/CommunityPage";
+import StudentWorksPage from "./pages/StudentWorksPage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminApp from "./pages/AdminApp";
 import AdminAssignmentsPage from "./pages/AdminAssignmentsPage";
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/" element={<GuestHome />} />
         <Route path="/class/:classId" element={<GuestClass />} />
         <Route path="/community" element={<CommunityPage isAdmin={isAdmin} />} />
+        <Route path="/works" element={<StudentWorksPage isAdmin={isAdmin} />} />
         <Route path="/rules" element={<RulesPage />} />
         <Route path="/ratings" element={<RatingsPage />} />
         <Route path="/analytics" element={<Navigate to="/admin" replace />} />
