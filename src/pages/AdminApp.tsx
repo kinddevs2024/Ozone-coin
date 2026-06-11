@@ -25,6 +25,7 @@ import {
   Trophy,
   Camera,
   FolderKanban,
+  ClipboardList,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { clearAdminToken } from "../api";
@@ -299,6 +300,7 @@ export default function AdminApp({ onLogout }: { onLogout: () => void }) {
             { label: "Dars va davomat", icon: <CalendarDays size={18} />, to: "/admin/jurnal" },
             { label: "Analitika", icon: <BarChart3 size={18} />, to: "/admin/analytics" },
             { label: "Kameralar", icon: <Camera size={18} />, to: "/admin/cameras" },
+            { label: "Testlar", icon: <ClipboardList size={18} />, to: "/admin/tests" },
             { label: "Tekshirish", icon: <ClipboardCheck size={18} />, to: "/admin/assignments" },
             { label: "Ishlar", icon: <FolderKanban size={18} />, to: "/works" },
             { label: "Community", icon: <MessageSquareMore size={18} />, to: "/community" },

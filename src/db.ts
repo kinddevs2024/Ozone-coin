@@ -163,6 +163,20 @@ export interface CameraTracksResponse {
   tracks: CameraTrackItem[];
 }
 
+export type PublicTestVariant = "A" | "B";
+
+export interface PublicTestSubmissionItem {
+  id: string;
+  firstName: string;
+  lastName: string;
+  variant: PublicTestVariant;
+  answers: Record<string, string>;
+  correctCount: number;
+  totalQuestions: number;
+  percent: number;
+  createdAt: string;
+}
+
 const base = () => getApiBase();
 
 const api = async (path: string, opts?: RequestInit) => {
@@ -569,6 +583,24 @@ export async function getAdminCameraTracks(cameraId?: string | null): Promise<Ca
     cameraId: typeof data?.cameraId === "string" ? data.cameraId : "all",
     tracks: Array.isArray(data?.tracks) ? data.tracks : [],
   };
+}
+
+export async function submitPublicTest(payload: {
+  firstName: string;
+  lastName: string;
+  variant: PublicTestVariant;
+  answers: Record<string, string>;
+}): Promise<PublicTestSubmissionItem> {
+  return await api("/api/public-tests/submissions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getPublicTestSubmissions(): Promise<PublicTestSubmissionItem[]> {
+  const data = await api("/api/admin/public-tests/submissions", { headers: authHeaders() });
+  return Array.isArray(data) ? data : [];
 }
 
 /** Hafta: 0 = dushanba … 6 = yakshanba */
